@@ -3,412 +3,397 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>How to Make Decisions That Lead to Success - Talk Notes</title>
+    <title>How to Make Decisions That Lead to Success</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
+        
         body {
             font-family: 'Inter', sans-serif;
-            line-height: 1.6;
-            padding-top: 75px; 
+            background-color: #ffffff;
+            color: #1e293b;
         }
+
         .scripture-box {
-            border-left: 4px solid #6366f1;
-            background-color: #f9fafb;
-            padding: 1.25rem;
-            margin: 1.25rem 0;
+            border-left: 4px solid #4f46e5;
+            background-color: #f8fafc;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
             border-radius: 0 0.5rem 0.5rem 0;
-        }
-        .instruction {
-            color: #b91c1c;
-            font-weight: 700;
             font-style: italic;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.025em;
-            display: block;
-            margin-bottom: 0.25rem;
+            font-size: 1.35rem;
+            color: #0f172a;
+            line-height: 1.5;
         }
-        .user-text {
-            color: #334155;
-            font-weight: 400;
-            font-size: 1.15rem;
-        }
+
         .pause-dot {
             display: inline-block;
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             background-color: #ef4444;
             border-radius: 50%;
-            margin: 0 4px;
+            margin: 0 6px;
             vertical-align: middle;
-            opacity: 0.8;
         }
-        .time-marker {
-            background-color: #f1f5f9;
-            color: #475569;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-weight: 700;
-            font-size: 0.75rem;
-            margin-right: 12px;
-            border: 1px solid #e2e8f0;
-            white-space: nowrap;
+
+        .instruction {
+            color: #b91c1c;
+            font-weight: 800;
+            font-style: italic;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: block;
+            margin-bottom: 0.5rem;
         }
-        #timer-container {
+
+        .tab-content {
+            display: none;
+            padding-bottom: 120px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .sticky-header {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            z-index: 1000;
+            z-index: 50;
+            background-color: #0f172a;
         }
-        .section-header {
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-        .conclusion-block {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 2rem;
-            border-radius: 1rem;
-        }
+
         b {
-            color: #1e293b;
-            font-weight: 700;
+            color: #000;
+            font-weight: 800;
             text-decoration: underline;
             text-decoration-color: #cbd5e1;
         }
+
+        /* Large text for teleprompter feel */
+        .script-text {
+            font-size: 1.5rem;
+            line-height: 1.8;
+        }
+
+        @media (min-width: 768px) {
+            .script-text {
+                font-size: 1.75rem;
+            }
+        }
     </style>
 </head>
-<body class="bg-white text-slate-800 p-4 md:p-10">
+<body class="pt-48">
 
-    <!-- Fixed Countdown Timer Header -->
-    <div id="timer-container" class="bg-slate-800 text-white shadow-md p-3">
-        <div class="max-w-3xl mx-auto flex justify-between items-center">
-            <div class="flex items-center space-x-4">
-                <div class="flex flex-col">
-                    <span class="text-[9px] uppercase tracking-widest text-slate-400 font-bold leading-none mb-1">Time Remaining</span>
-                    <span id="display" class="text-2xl font-mono font-bold leading-none">30:00</span>
+    <!-- FIXED TIMER & NAV HEADER -->
+    <div class="sticky-header shadow-2xl">
+        <div class="max-w-4xl mx-auto p-4 flex flex-col items-center space-y-4">
+            <!-- Timer Display -->
+            <div class="flex items-center space-x-8">
+                <div class="flex flex-col items-center">
+                    <span class="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Time Remaining</span>
+                    <span id="display" class="text-5xl font-mono font-extrabold text-white">30:00</span>
+                </div>
+                <div class="flex space-x-2">
+                    <button id="startPauseBtn" onclick="toggleTimer()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-xl font-bold text-sm uppercase transition-all shadow-lg">Start</button>
+                    <button onclick="resetTimer()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-4 py-3 rounded-xl font-bold text-sm uppercase transition-all">Reset</button>
                 </div>
             </div>
-            <div class="flex space-x-2">
-                <button id="startPauseBtn" onclick="toggleTimer()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md font-semibold text-xs transition-all uppercase tracking-wider">Start</button>
-                <button onclick="resetTimer()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-2 rounded-md font-semibold transition-all uppercase text-[10px]">Reset</button>
+
+            <!-- Tab Navigation -->
+            <div class="flex w-full border-t border-slate-700 pt-3">
+                <button id="outlineTab" onclick="switchTab('outline')" class="flex-1 py-3 text-center font-bold text-xs uppercase tracking-widest text-indigo-400 border-b-4 border-indigo-400 transition-all">Outline View</button>
+                <button id="scriptTab" onclick="switchTab('script')" class="flex-1 py-3 text-center font-bold text-xs uppercase tracking-widest text-slate-400 border-b-4 border-transparent transition-all">Full Script (Word for Word)</button>
             </div>
         </div>
     </div>
 
-    <div class="max-w-3xl mx-auto">
-        
-        <header class="text-center mb-12 border-b border-slate-100 pb-8">
-            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">How to Make Decisions That Lead to Success</h1>
-            <p class="text-slate-500 font-medium uppercase text-xs tracking-widest mt-2">30 Minute Discourse</p>
-        </header>
+    <div class="max-w-4xl mx-auto px-6">
 
-        <div class="space-y-12 mb-20">
-
-            <!-- Section 1: Introduction -->
-            <section>
-                <div class="section-header">
-                    <span class="time-marker">30:00 LEFT</span>
-                    <h2 class="text-lg font-bold text-slate-800 uppercase tracking-wide">I. Introduction</h2>
-                </div>
-                <div class="space-y-6">
-                    <p class="user-text leading-relaxed">
-                        Water is a <b>fundamental element of life</b>. Without it, we would have nothing. <span class="pause-dot"></span> Here in our mountains, we know that even the clearest stream can be deceptive. Someone inexperienced might be tempted to drink because he’s thirsty now; but a <b>wise person is cautious</b> because they’ve seen the "runoff" of life. <span class="pause-dot"></span>
-                    </p>
-                    <p class="user-text">
-                        We all face decisions that look clear on the surface but carry hidden risks.
-                    </p>
-                    <div class="pl-6 border-l-2 border-slate-100 space-y-2 italic text-slate-600">
-                        <p><b>The Young:</b> Are choosing their friends, their education, or how they use their time online.</p>
-                        <p><b>The Middle-Aged:</b> Are balancing the pressures of work, raising a family, and caring for parents.</p>
-                        <p><b>The Older:</b> Are navigating health changes, deciding how to simplify their lives to focus on what matters most, or how to use their <b>wealth of experience</b> to encourage others.</p>
+        <!-- TAB 1: OUTLINE -->
+        <div id="outline-view" class="tab-content active space-y-12">
+            <h1 class="text-3xl font-black text-slate-900 border-b-4 border-slate-100 pb-4 uppercase tracking-tighter">Talk Outline</h1>
+            
+            <div class="space-y-12 py-6">
+                <section>
+                    <div class="flex items-center mb-4">
+                        <span class="bg-slate-100 text-slate-500 px-3 py-1 rounded-md font-bold text-xs mr-4">30:00</span>
+                        <h3 class="text-indigo-600 font-black text-xl uppercase">I. Free Will (5 Min)</h3>
                     </div>
-                    <p class="user-text">
-                        In every stage, we ask the same question: <b>Which decision leads to success?</b> <span class="pause-dot"></span>
-                    </p>
-                    <p class="user-text">
-                        Jehovah hasn't created us to be robots. He has given us the <b>Dignity of Choice</b>. He doesn't force us to drink the "Pure Water" of his wisdom, but he does invite us. <span class="pause-dot"></span> When we stand at a crossroads, we often ask "What should I do?" But is there a more important question we should ask first? Notice the choice Jehovah puts before each and every one of us at <b>Deuteronomy 30:19</b>.
-                    </p>
+                    <ul class="list-disc pl-8 space-y-3 text-2xl font-medium">
+                        <li>Survival vs Thriving.</li>
+                        <li>Poison/Sea Water illustration.</li>
+                        <li><b>Deuteronomy 30:19</b> — Context of Israel.</li>
+                        <li>"You Must Choose."</li>
+                        <li>Survivalist Guide vs Worldly Streams.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <div class="flex items-center mb-4">
+                        <span class="bg-slate-100 text-slate-500 px-3 py-1 rounded-md font-bold text-xs mr-4">25:00</span>
+                        <h3 class="text-indigo-600 font-black text-xl uppercase">II. Equipment (5 Min)</h3>
+                    </div>
+                    <ul class="list-disc pl-8 space-y-3 text-2xl font-medium">
+                        <li>Filtration, Manual, Test Kit.</li>
+                        <li><b>Isaiah 48:17</b> — Benefit Yourself.</li>
+                        <li>Reading vs Pondering (<b>Ps 119:97, 100</b>).</li>
+                        <li>Source Code: Murder Law vs Hatred.</li>
+                        <li>Case Studies (<b>1 Cor 10:11</b>).</li>
+                        <li>Calibration (<b>Heb 5:14</b>).</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <div class="flex items-center mb-4">
+                        <span class="bg-slate-100 text-slate-500 px-3 py-1 rounded-md font-bold text-xs mr-4">20:00</span>
+                        <h3 class="text-indigo-600 font-black text-xl uppercase">III. The 4 Steps (10 Min)</h3>
+                    </div>
+                    <ol class="list-decimal pl-8 space-y-4 text-2xl font-bold">
+                        <li>Patience (Sediment Trap) - <b>Pr 21:5 / Deut 32:29</b></li>
+                        <li>Prayer (UV Light) - <b>James 1:5</b></li>
+                        <li>Research (High Pressure) - <b>Prov 2:3-5</b></li>
+                        <li>Motives (Small Glass) - <b>Prov 16:2</b></li>
+                        <li>Pioneer Case Study (Recirculation).</li>
+                    </ol>
+                </section>
+
+                <section>
+                    <div class="flex items-center mb-4">
+                        <span class="bg-slate-100 text-slate-500 px-3 py-1 rounded-md font-bold text-xs mr-4">08:00</span>
+                        <h3 class="text-indigo-600 font-black text-xl uppercase">IV. Implementation (4 Min)</h3>
+                    </div>
+                    <ul class="list-disc pl-8 space-y-3 text-2xl font-medium">
+                        <li>The 3-Day Rule (Lethal Inaction).</li>
+                        <li><b>Phil 2:13</b> — Power to Act.</li>
+                        <li>Hardships (<b>Ps 34:19</b>).</li>
+                        <li>Dead Ends (<b>Eccl 3:6</b>).</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <div class="flex items-center mb-4">
+                        <span class="bg-slate-100 text-slate-500 px-3 py-1 rounded-md font-bold text-xs mr-4">04:00</span>
+                        <h3 class="text-indigo-600 font-black text-xl uppercase">V. Most Important Decision (4 Min)</h3>
+                    </div>
+                    <ul class="list-disc pl-8 space-y-3 text-2xl font-medium">
+                        <li>Matt 16:24 (The Stake).</li>
+                        <li><b>Luke 14:28</b> — Tower/Calculating Cost.</li>
+                        <li><b>James 4:8, 17</b> — Knowing vs Doing.</li>
+                        <li>Dedication Vows (<b>Num 30:2</b>).</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <div class="flex items-center mb-4">
+                        <span class="bg-slate-100 text-slate-500 px-3 py-1 rounded-md font-bold text-xs mr-4">02:00</span>
+                        <h3 class="text-indigo-600 font-black text-xl uppercase">VI. Conclusion (2 Min)</h3>
+                    </div>
+                    <ul class="list-disc pl-8 space-y-3 text-2xl font-medium">
+                        <li><b>Proverbs 27:11</b> — Replying to the Taunter.</li>
+                        <li>Gift for the Creator.</li>
+                        <li><b>Handle of the Cup.</b></li>
+                    </ul>
+                </section>
+            </div>
+        </div>
+
+        <!-- TAB 2: FULL SCRIPT (EXACT WORDING) -->
+        <div id="script-view" class="tab-content script-text space-y-16">
+            
+            <!-- SECTION i -->
+            <section>
+                <div class="flex items-center space-x-3 mb-8">
+                    <span class="bg-indigo-600 text-white px-3 py-1 rounded font-black text-sm uppercase">Phase I</span>
+                    <h2 class="text-3xl font-black text-slate-900">JEHOVAH HAS GIVEN US FREE WILL</h2>
+                </div>
+                <div class="space-y-8">
+                    <p><b>Water is essential to life</b>, without it you cannot survive long. <span class="pause-dot"></span></p>
+                    <p>There is a difference between surviving and living a good life, <b>wouldn’t you agree?</b> <span class="pause-dot"></span></p>
+                    <p>Can you survive on very poor quality water? Yes, you can. Under a circumstance where you had to choose to drink bad tasting water and death, we would probably choose to live. <span class="pause-dot"></span> But there is some water that is completely undrinkable, if you drank it could actually speed up your death. <b>Poisoned or polluted water, sea water.</b> <span class="pause-dot"></span></p>
+                    <p>The point is we need water to survive, but we need <b>pure clean water to thrive.</b> <span class="pause-dot"></span></p>
+                    <p>It is similar with decisions. <b>Making decisions is essential to life.</b> In fact, that is a scriptural statement.</p>
+                    <p>Turn with me to <b>Deuteronomy 30:19.</b> Notice what the creator puts before his servants. <span class="pause-dot"></span></p>
                     
                     <div class="scripture-box">
                         <span class="instruction">Read Deuteronomy 30:19</span>
-                        <p class="text-xl font-semibold italic text-slate-900 leading-snug mt-2">
-                            "I take the heavens and the earth as witnesses against you today that I have put life and death before you, the blessing and the curse; and you must choose life so that you may live, you and your descendants."
-                        </p>
+                        19 I take the heavens and the earth as witnesses against you today that I have put life and death before you, the blessing and the curse; and you must choose life so that you may live, you and your descendants
                     </div>
 
-                    <p class="user-text">
-                        Jehovah, the Creator, respects us enough to say: <b>"You must choose."</b> <span class="pause-dot"></span> He already knows what is best for us; he wants us not only to live, but to thrive—and yet he doesn’t make us do anything. <b>It really is our choice.</b> <span class="pause-dot"></span>
-                    </p>
-                    <p class="user-text">
-                        Really, the question that we need to ask first is: <b>What should guide my decision?</b>
-                    </p>
-                    <p class="user-text italic text-slate-500">
-                        <span class="instruction">Illustrate:</span> Imagine being with an <b>experienced survivalist guide</b> on a hike in the woods. He knows all the plants you can eat, he has all the tools for survival, and a filter for the water you find. <span class="pause-dot"></span> Wouldn’t you ask for his help as you are walking along?
-                    </p>
-                    <p class="user-text">
-                        Jehovah provides that <b>"filter"</b> to help us see clearly. Whether you are making your first big decision or your five-hundredth, the process is the same. With his help, we can learn to make decisions that don't just feel good in the moment, but lead to a <b>life of success</b>. <span class="pause-dot"></span> Let's look at how we can start that process.
-                    </p>
+                    <p><b>You must choose.</b> <span class="pause-dot"></span></p>
+                    <p>Jehovah taught them what was right and wrong so they could understand. <b>He never took away their free will.</b> <span class="pause-dot"></span></p>
+                    <p>Jehovah, the Creator, respects us enough to say: "You must choose." He already knows what is best for us; he wants us not only to live, but to thrive—and yet he doesn’t make us do anything. <b>It really is our choice.</b> <span class="pause-dot"></span></p>
+                    <p>The situation is the same today as with the israelites. There were other ways to live. Other gods to worship. Jehovah wasn’t going to stop them from going that direction, but he warned them. <span class="pause-dot"></span></p>
+                    <p>Imagine being with an <b>experienced survivalist guide</b> on a hike in the woods. He knows all the plants you can eat, he has all the tools for survival, and a filter for the water you find. <b>Wouldn’t you ask for his help as you are walking along?</b> <span class="pause-dot"></span></p>
+                    <p>With Jehovah’s help, we can make wise decisions in every aspect of our life. Today we will see the equipment Jehovah gives to make wise choices, a four step process to make good decisions, and the importance of implementing those decisions. <b>Im excited to share this with you.</b></p>
                 </div>
             </section>
 
-            <!-- Section 2: Equipped for Success -->
+            <!-- SECTION ii -->
             <section>
-                <div class="section-header">
-                    <span class="time-marker">27:00 LEFT</span>
-                    <h2 class="text-lg font-bold text-slate-800 uppercase tracking-wide">II. Equipped for Success</h2>
-                </div>
-                <div class="space-y-6">
-                    <p class="user-text italic text-slate-500">
-                        <span class="instruction">Visual:</span> We look at this picture and we think: <b>Which path should I choose?</b> <span class="pause-dot"></span> Interestingly, in the picture, both roads are narrow. Both look challenging. Isn’t that how life seems sometimes? It’s not always obvious from the start which path leads to success. <b>It’s difficult.</b>
-                    </p>
-                    <p class="user-text">
-                        But Jehovah gives us <b>exactly what we need</b> to choose correctly. Put simply, he gives us three things: His word the Bible, thinking ability, and our conscience. <span class="pause-dot"></span>
-                    </p>
-                    <p class="user-text">
-                        If you bought a piece of <b>high-end machinery</b> for filtering water, the first thing you’d do is check the manual. Any serious manual says in bold letters: "Read and fully understand all instructions before operating this device." Why? <span class="pause-dot"></span> Because the manufacturer knows that if you just "wing it," you won't get the results they promised.
-                    </p>
-                    <p class="user-text">
-                        Jehovah doesn't want us to just "glance" at the Bible when we're in trouble; he wants us to <b>understand the process beforehand.</b> Imagine if you only looked at the manual after you or someone in your family got <b>violently ill</b> from the water you drank? <span class="pause-dot"></span> By then, the damage is done.
-                    </p>
-                    <p class="user-text">
-                        When a manufacturer includes a "Troubleshooting" section, is it because he wants to restrict you? No, it’s because he wants his machine to <b>work perfectly for you.</b> Notice how Jehovah describes his motive at <b>Isaiah 48:17</b>.
-                    </p>
-
-                    <div class="scripture-box">
-                        <span class="instruction">Read Isaiah 48:17</span>
-                        <p class="text-xl font-semibold italic text-slate-900 leading-snug mt-2">
-                            "I, Jehovah, am your God, The One teaching you to benefit yourself, The One guiding you in the way you should walk."
-                        </p>
-                    </div>
-
-                    <p class="user-text">
-                        He is teaching you <b>"for your own benefit."</b> This isn't trial and error; it’s a <b>filtration system</b> designed by the One who made the water. <span class="pause-dot"></span> When we apply his counsel, we are accepting a benefit he wants us to have.
-                    </p>
-                    
-                    <p class="user-text">
-                        In a world that prizes "life experience," the Psalmist made a bold claim: that there is a source of wisdom that <b>surpasses the experience</b> of older men. Let’s look at his secret in <b>Psalm 119:97 and 100</b>.
-                    </p>
-
-                    <div class="scripture-box">
-                        <p class="text-xl font-semibold italic text-slate-900 leading-snug">
-                            "How I do love your law! I ponder over it all day long... I act with more understanding than older men, Because I observe your orders."
-                        </p>
-                    </div>
-
-                    <p class="user-text">
-                        He had more understanding because he didn't just know the orders—<b>he pondered them.</b> <span class="pause-dot"></span> To "ponder" means to look at the <b>"Source Code"</b>—to understand why Jehovah gave the command in the first place.
-                    </p>
-
-                    <p class="user-text bg-slate-50 p-4 rounded-md">
-                        <span class="instruction">Example:</span> The Law said: "You must not murder." That is point-blank. But using thinking ability, we see the source: <b>Hatred.</b> <span class="pause-dot"></span> Viewing someone as not worth living because of an opposing viewpoint. It starts with meditating on <b>irritating qualities</b> until you can't stand to be in the same room. <span class="pause-dot"></span> This is why Jesus said in <b>Matthew 5:22</b> that even "continuing wrathful" or "words of contempt" makes us accountable. By pondering, we found a principle that covers <b>every aspect of life.</b>
-                    </p>
-
-                    <p class="user-text">
-                        Every piece of equipment also comes with <b>"test studies."</b> In the Bible, we have the records of real people. 1 Corinthians 10:11 says their stories are <b>"water test results."</b> <span class="pause-dot"></span> We see exactly what happened when someone bypassed the filter.
-                    </p>
-                    
-                    <p class="user-text">
-                        Finally, Jehovah endows us with the <b>"Internal Hardware"</b>—thinking ability and a conscience. Notice this "training program" at <b>Proverbs 2:10, 11</b>.
-                    </p>
-
-                    <div class="scripture-box">
-                        <span class="instruction">Refer to Proverbs 2:10, 11</span>
-                        <p class="text-lg font-medium italic text-slate-700">"When wisdom enters your heart... Thinking ability will keep watch over you, And discernment will safeguard you."</p>
-                    </div>
-
-                    <p class="user-text">
-                        Even the best filtration system won't work if the sensors aren't calibrated. Our <b>conscience</b> is that hardware. We calibrate it using <b>"solid food"</b>—the deeper principles of the Bible. (Heb 5:14). <span class="pause-dot"></span> By comparing our small thoughts—like that tiny spark of irritation—to Jehovah’s thinking, our spiritual "sensors" become <b>highly sensitive.</b>
-                    </p>
-                    
-                    <div class="bg-indigo-50 p-4 rounded-md border border-indigo-100">
-                        <span class="instruction">Transition:</span> We realize we are equipped with these powerful tools. Now we just need to know how to put them into action. Following these bible based steps is similar to a <b>water filtration system.</b>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Section 3: The Filtration System -->
-            <section>
-                <div class="section-header">
-                    <span class="time-marker">20:00 LEFT</span>
-                    <h2 class="text-lg font-bold text-slate-800 uppercase tracking-wide">III. The Filtration System</h2>
+                <div class="flex items-center space-x-3 mb-8">
+                    <span class="bg-indigo-600 text-white px-3 py-1 rounded font-black text-sm uppercase">Phase II</span>
+                    <h2 class="text-3xl font-black text-slate-900">JEHOVAH HAS EQUIPPED US</h2>
                 </div>
                 <div class="space-y-8">
-                    <p class="user-text">
-                        When you’re standing in front of a mountain stream, you don't just hope the water is clean—<b>you use your filter.</b> <span class="pause-dot"></span> Jehovah has given us a four-step purification process. This is a powerful metal tool that takes a <b>muddy, high-pressure situation</b> and refines it until what is left is a clear, safe decision. <span class="pause-dot"></span>
-                    </p>
-
-                    <!-- Step 1 -->
-                    <div>
-                        <span class="instruction underline">Step 1: Don’t be hasty (stop! think!).</span>
-                        <p class="user-text mt-2">
-                            In a physical filter, the first stage is often a <b>sediment trap.</b> It relies on gravity and time. If you try to force muddy water through a fine filter immediately, you’ll <b>clog the whole system.</b> <span class="pause-dot"></span> Spiritually, our "mud" is often our <b>raw emotions</b>—panic, pride, or pressure.
-                        </p>
-                        <div class="scripture-box bg-white">
-                            <span class="instruction italic text-slate-400">Read Deuteronomy 32:29</span>
-                            <p class="font-medium italic text-slate-900">"If only they were wise! They would ponder over this. They would think about their outcome."</p>
-                        </div>
-                        <p class="user-text mt-2 italic">
-                            A wise person "ponders over" the outcome. We let the emotions settle so we can see the situation clearly. <span class="pause-dot"></span> This is not "wait and see"—it is <b>diligently pondering.</b> The Bible warns we cannot always trust our heart (Prov 28:26). <span class="pause-dot"></span>
-                        </p>
-                    </div>
-
-                    <!-- Step 2 -->
-                    <div>
-                        <span class="instruction underline">Step 2: Pray for wisdom.</span>
-                        <p class="user-text mt-2">
-                            Once the water looks clear, we use a <b>UV Light.</b> It disrupts the DNA of bacteria. This <b>cannot be effective when the water is cloudy.</b> <span class="pause-dot"></span> When we pray as James 1:5 suggests, we are asking Jehovah for His light to sanitize our thinking.
-                        </p>
-                        <div class="scripture-box bg-white">
-                            <span class="instruction italic text-slate-400">James 1:5</span>
-                            <p class="font-medium italic">"So if any one of you is lacking in wisdom, let him keep asking God, for he gives generously..."</p>
-                        </div>
-                    </div>
-
-                    <!-- Step 3 -->
-                    <div>
-                        <span class="instruction underline">Step 3: Do thorough research.</span>
-                        <p class="user-text mt-2">
-                            This is the stage of <b>high-pressure filtration</b>, like a fine membrane. It forces the water through a barrier so microscopic that only pure water passes. <span class="pause-dot"></span>
-                        </p>
-                        <div class="scripture-box bg-white">
-                            <span class="instruction italic text-slate-400">Proverbs 2:3-5</span>
-                            <p class="font-medium italic">"If you keep seeking for it as for silver... searching for it as for hidden treasures; Then you will understand the fear of Jehovah."</p>
-                        </div>
-                        <p class="user-text mt-2">
-                            We are putting our thoughts under the <b>"pressure" of God’s Word.</b> This separates human thinking from Jehovah’s wisdom. <span class="pause-dot"></span> We use congregation tools but avoid asking others “what would you do?” <b>We must carry our own load.</b>
-                        </p>
-                    </div>
-
-                    <!-- Step 4 -->
-                    <div>
-                        <span class="instruction underline">Step 4: Analyze your motives.</span>
-                        <p class="user-text mt-2">
-                            Finally, you pour a little into a <b>small glass</b>. How does it smell? How does it taste? <span class="pause-dot"></span> Jehovah examines the motives (Prov 16:2). It’s important to test if our decision is <b>sincere</b>, or it may not stick. <span class="pause-dot"></span>
-                        </p>
-                        <p class="user-text italic text-slate-500 mt-4 border-l-2 pl-4">
-                            <span class="instruction">Example:</span> A brother pioneering realizes the <b>"taste" is off</b>—he wanted to please his parents. <span class="pause-dot"></span> He goes back to Stage 1. He prays. He researches. Finally, he finds a <b>genuine love for Jehovah</b>. Now he is no longer guided solely by emotion.
-                        </p>
-                        <p class="user-text bg-red-50 p-4 rounded-md mt-4 border border-red-100 font-medium">
-                            <span class="instruction">Warning:</span> Avoid the <b>Feedback Loop</b> of second-guessing and ruminating. If you don't decide, a decision will be <b>made for you.</b> <span class="pause-dot"></span>
-                        </p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Section 4: Implementation -->
-            <section>
-                <div class="section-header">
-                    <span class="time-marker">10:00 LEFT</span>
-                    <h2 class="text-lg font-bold text-slate-800 uppercase tracking-wide">IV. Implementation</h2>
-                </div>
-                <div class="space-y-6">
-                    <p class="user-text">
-                        Now we have a decision made—it’s a good, purified decision. Now is the time for <b>implementation. It’s time to act.</b> <span class="pause-dot"></span> It would be a tragedy to do all that work and then die of thirst because you never actually drank.
-                    </p>
-
-                    <div class="scripture-box">
-                        <span class="instruction">Read 2 Corinthians 8:10, 11</span>
-                        <p class="text-lg font-semibold italic text-slate-900 leading-snug mt-2">
-                            "And in this I give my opinion: This is for your benefit... So now, also complete what you started to do..."
-                        </p>
-                    </div>
-
-                    <p class="user-text">
-                        Jehovah doesn't just give us the "water"; He gives us the <b>energy to lift the glass</b>. <span class="pause-dot"></span> He gives us both the desire and the power to act. (Phil 2:13).
-                    </p>
+                    <p>To have good clean water, you need the right tools: You need a <b>filtration system</b>, you need to know how to use the system, so you need the <b>manual</b>, and you need a <b>test kit</b> to ensure the water is safe. <span class="pause-dot"></span></p>
+                    <p>To make good decisions, Jehovah has equipped us with the tools to make <b>good clean decisions.</b> <span class="pause-dot"></span> We have the Bible in its entirety, we have been endowed with <b>thinking ability</b>, and been given a <b>conscience</b> that when trained by bible principles can test out decisions instantly. <span class="pause-dot"></span></p>
+                    <p>Jehovah doesn’t just drop off these tools to us and hope for the best, notice his interest in each and everyone of us at <b>Isaiah 48:17</b></p>
                     
-                    <p class="user-text font-bold text-red-800 italic border-t pt-4">
-                        Does this mean a smooth path? <span class="pause-dot"></span>
+                    <div class="scripture-box">
+                        <span class="instruction">Read Isaiah 48:17</span>
+                        17 This is what Jehovah says, your Repurchaser, the Holy One of Israel: “I, Jehovah, am your God, The One teaching you to benefit yourself, The One guiding you in the way you should walk.
+                    </div>
+
+                    <p>Jehovah is our teacher, he wants us to <b>benefit ourselves.</b> We have the manual to life at our disposal: The Bible. <span class="pause-dot"></span></p>
+                    <p>If you bought a piece of <b>high-end machinery</b>, the first thing you’d do is <b>check the manual.</b> Any serious manual says in bold letters: "Read and fully understand all instructions before operating this device." <b>Why?</b> <span class="pause-dot"></span> Because the manufacturer knows that if you just "wing it," you won't get the results they promised.</p>
+                    <p>Jehovah doesn't want us to just "glance" at the Bible when we're in trouble; he wants us to <b>understand the process beforehand.</b> Imagine if you only looked at the manual after you or someone in your family got <b>violently ill</b> from the water you drank. <b>By then, the damage is done.</b> <span class="pause-dot"></span></p>
+                    <p>So what must we do? <b>We should make it a goal to read his word everyday.</b></p>
+                    <p>But we shouldn’t just read it. <b>We must also think deeply on it.</b> <span class="pause-dot"></span></p>
+                    <p>Notice the Psalmist's secret in <b>Psalm 119:97 and 100</b>:</p>
+                    <div class="scripture-box">
+                        "How I do love your law! I ponder over it all day long... I act with more understanding than older men, Because I observe your orders."
+                    </div>
+                    <p>He had more understanding because he didn't just know the orders—<b>he pondered them.</b> <span class="pause-dot"></span> What does it mean to ponder over something? <span class="pause-dot"></span></p>
+                    
+                    <p className="bg-slate-50 p-6 rounded-lg">
+                        <span class="instruction">The Law Example:</span> The Law said: "You must not murder." Point-blank command. But using thinking ability, we see the source: <b>Hatred.</b> Meditating on irritating qualities until you can't stand to be in the same room. <span class="pause-dot"></span> This is why Jesus said in <b>Matthew 5:22</b> that even "continuing wrathful" or "words of contempt" makes us accountable. <span class="pause-dot"></span> <b>Make things right.</b> You cannot worship Jehovah whom you cannot see, if you hate your brother whom you can see. <span class="pause-dot"></span>
                     </p>
-                    <p class="user-text">
-                        <b>Psalm 34:19</b> says many are the hardships. Some good decisions lead to prison. Was that a bad decision? <b>Of course not!</b> <span class="pause-dot"></span>
-                    </p>
-                    <p class="user-text">
-                        However, <b>be realistic.</b> If a decision was beyond your ability, as Ecclesiastes 3:6 says, there is a time to <b>give up as lost.</b> <span class="pause-dot"></span> If you come to a dead end, recirculate. Go through the four-step process again.
+
+                    <p>In the bible we are given <b>“case studies”</b>—records written as a warning to us. (1 Cor. 10:11). So we read Gods word, we ponder, and our <b>conscience is trained.</b> <span class="pause-dot"></span></p>
+                    <p>Even the best filtration system won't work if the sensors aren't <b>calibrated.</b> Our conscience is that "hardware." We calibrate it using <b>"solid food"</b>—the deeper principles of the Bible. (Hebrews 5:14). <span class="pause-dot"></span></p>
+                    
+                    <p className="bg-indigo-50 p-6 rounded-lg text-slate-700 italic">
+                        We realize we are equipped with these powerful tools. Now we just need to know how to put them into action. Following these bible based steps is similar to a water filtration system.
                     </p>
                 </div>
             </section>
 
-            <!-- Section 5: The Most Important Decision -->
+            <!-- SECTION iii -->
             <section>
-                <div class="section-header">
-                    <span class="time-marker">06:00 LEFT</span>
-                    <h2 class="text-lg font-bold text-slate-800 uppercase tracking-wide">V. The Most Important Decision</h2>
+                <div class="flex items-center space-x-3 mb-8">
+                    <span class="bg-indigo-600 text-white px-3 py-1 rounded font-black text-sm uppercase">Phase III</span>
+                    <h2 class="text-3xl font-black text-slate-900">FOLLOW STEPS TO A GOOD DECISION</h2>
                 </div>
-                <div class="space-y-6">
-                    <p class="user-text">
-                        All of us here have a decision before us. <b>Matthew 16:24</b>: "If anyone wants to come after me, let him disown himself..." This is the decision to <b>dedicate our lives to Jehovah.</b> <span class="pause-dot"></span>
-                    </p>
-                    <p class="user-text">
-                        Jesus said at Luke 14:28: <b>"calculate the expense."</b> Building a tower. <span class="pause-dot"></span> Before making this life-altering decision, we shouldn't be hasty; we must pray, do research, and examine our motives.
-                    </p>
+                <div class="space-y-12">
+                    <p>Jehovah has given us a <b>four-step purification process.</b> This could be our decision filtration system. It’s a powerful metal tool that takes a muddy, high-pressure situation and refines it. <span class="pause-dot"></span></p>
+
+                    <div>
+                        <span class="instruction">Step 1: Don’t be hasty (stop! think!).</span>
+                        <p>Based on <b>Pr 21:5</b>: “The plans of the diligent surely lead to success...” In a water filter, the first stage is often a <b>sediment trap.</b> If you force muddy water through a fine filter immediately, you’ll <b>clog the whole system.</b> <span class="pause-dot"></span> Spiritually, our "mud" is our <b>raw emotions</b>—panic, pride, or pressure. <span class="pause-dot"></span></p>
+                        <div class="scripture-box">
+                            <span class="instruction">Read Deuteronomy 32:29</span>
+                            29 If only they were wise! They would ponder over this. They would think about their outcome.
+                        </div>
+                        <p>By being patient, we let the <b>"mud" settle</b> so we can actually see the situation for what it is. <span class="pause-dot"></span> If you rush, you overlook important information. <b>Do not make decisions based solely on your emotions.</b> (Prov. 28:26; Jer. 17:9). <span class="pause-dot"></span></p>
+                    </div>
+
+                    <div>
+                        <span class="instruction">Step 2: Pray for wisdom.</span>
+                        <p>Once water looks clear, we use a <b>UV Light.</b> It disrupts the DNA of invisible bacteria. <b>This cannot be effective when the water is cloudy.</b> <span class="pause-dot"></span> When we pray as <b>James 1:5</b> suggests, we are asking Jehovah for His light to "sanitize" our thinking from invisible <b>"spiritual viruses"</b>—subtle worldly philosophies. <span class="pause-dot"></span></p>
+                        <div class="scripture-box">
+                            <span class="instruction">James 1:5</span>
+                            5 So if any one of you is lacking in wisdom, let him keep asking God, for he gives generously...
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="instruction">Step 3: Do thorough research.</span>
+                        <p>This is <b>high-pressure filtration</b>, like a fine membrane. This is the <b>hard work.</b> The answers are there. <b>Proverbs 2:3-5</b> shows us: <span class="pause-dot"></span></p>
+                        <div class="scripture-box">
+                            "3 Moreover, if you call out for understanding... 4 If you keep seeking for it as for silver... 5 Then you will understand the fear of Jehovah..."
+                        </div>
+                        <p>We separate human thinking from Jehovah’s wisdom. We use congregation tools and mature christians, but avoid asking <b>“what would you do?”</b> The only one we can throw our burdens on is Jehovah. <span class="pause-dot"></span></p>
+                    </div>
+
+                    <div>
+                        <span class="instruction">Step 4: Analyze your motives.</span>
+                        <p>Final inspection in a <b>small glass</b>. How does it look? Smell? <b>Taste?</b> <span class="pause-dot"></span> Jehovah wants us to be honest. <b>Pr 16:2</b>: "All of a man’s ways seem right to him, But Jehovah examines the motives." If we aren't sincere, the decision may not stick. <span class="pause-dot"></span></p>
+                        <p className="bg-slate-50 p-6 rounded-lg italic">
+                            <b>Example:</b> Young brother pioneering realizes his <b>"taste" is off</b>—he wanted to please his parents. <span class="pause-dot"></span> He recirculates. He goes back to Stage 1, prays, researches. Renewed with vigor and <b>genuine love for Jehovah.</b> <span class="pause-dot"></span>
+                        </p>
+                        <p className="text-red-700 font-black">
+                            Warning: Avoid the <b>Feedback Loop</b> of ruminating. If you don't decide, a decision will be <b>made for you.</b> <span class="pause-dot"></span>
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION iv -->
+            <section>
+                <div class="flex items-center space-x-3 mb-8">
+                    <span class="bg-indigo-600 text-white px-3 py-1 rounded font-black text-sm uppercase">Phase IV</span>
+                    <h2 class="text-3xl font-black text-slate-900">IMPLEMENT YOUR DECISION</h2>
+                </div>
+                <div class="space-y-8">
+                    <p>A purified decision is useless if you never <b>“drink the water”.</b> <span class="pause-dot"></span> You could perish in as little as <b>three days</b> without water! <span class="pause-dot"></span></p>
+                    <p>Don't get stuck in a "Feedback Loop." Paul said: <b>"complete what you started"</b> (2 Cor 8:10, 11). <span class="pause-dot"></span></p>
+                    
+                    <div class="scripture-box">
+                        <span class="instruction">Read Philippians 2:13</span>
+                        13 For God is the one who for the sake of his good pleasure energizes you, giving you both the desire and the power to act.
+                    </div>
+
+                    <p>Jehovah gives you the <b>"energy to lift the glass."</b> <span class="pause-dot"></span> This doesn't mean the path will be easy. (Psalm 34:19). Some good decisions lead to <b>great difficulties</b>—think of our brothers in prison. Was that a bad decision? <b>Of course not!</b> <span class="pause-dot"></span></p>
+                    <p>However, be realistic. As <b>Ecclesiastes 3:6</b> says, there is <b>"a time to give up as lost."</b> If you hit a dead end, don't give up blindly—<b>recirculate.</b> Go through the four steps again. <span class="pause-dot"></span></p>
+                </div>
+            </section>
+
+            <!-- SECTION v -->
+            <section>
+                <div class="flex items-center space-x-3 mb-8">
+                    <span class="bg-indigo-600 text-white px-3 py-1 rounded font-black text-sm uppercase">Phase V</span>
+                    <h2 class="text-3xl font-black text-slate-900">YOUR MOST IMPORTANT DECISION</h2>
+                </div>
+                <div class="space-y-8">
+                    <p>Jesus set this before every one of us at <b>Matthew 16:24</b>: "If anyone wants to come after me, let him disown himself..." This is <b>dedication and baptism.</b> <span class="pause-dot"></span></p>
+                    <p>Jesus said at <b>Luke 14:28</b> to <b>"calculate the expense"</b> of building a tower. <span class="pause-dot"></span> Go through the process: don't be hasty, pray, research, examine motives. <span class="pause-dot"></span></p>
                     
                     <div class="scripture-box">
                         <span class="instruction">Read James 4:8, 17</span>
-                        <p class="text-lg italic font-medium leading-snug">
-                            "Draw close to God, and he will draw close to you... Therefore, if someone knows how to do what is right and yet does not do it, it is a sin for him."
-                        </p>
+                        "Draw close to God... Therefore, if someone knows how to do what is right and yet does not do it, it is a sin for him."
                     </div>
 
-                    <p class="user-text">
-                        What is preventing you from taking that step? <span class="pause-dot"></span> This <b>"purification system"</b> can help you refine your thoughts so you can finally implement the most important decision of your life.
-                    </p>
-                    <p class="user-text font-bold border-t pt-4">
-                        Some decisions we <b>never go back on.</b> Dedication vows. Marriage vows. Numbers 30:2 says "he must not violate his word." <span class="pause-dot"></span>
+                    <p>What is preventing you? Baptism? Trust? <span class="pause-dot"></span> This <b>"purification system"</b> can help you finally implement the <b>most important decision of your life.</b> <span class="pause-dot"></span></p>
+                    <p className="border-t pt-8 italic font-bold">
+                        Some decisions we never go back on. Dedication. Marriage. <b>Numbers 30:2</b>: "he must not violate his word." <span class="pause-dot"></span>
                     </p>
                 </div>
             </section>
 
-            <!-- Conclusion -->
-            <section class="conclusion-block">
-                <div class="section-header mb-6">
-                    <span class="time-marker">02:00 LEFT</span>
-                    <h2 class="text-lg font-bold text-slate-900 uppercase tracking-widest">Conclusion</h2>
-                </div>
-                <div class="space-y-6 user-text">
-                    <p>
-                        Does it really matter to Jehovah? <span class="pause-dot"></span> <b>Proverbs 27:11</b>: "make my heart rejoice, So that I can make a reply to him who taunts me." <b>Jehovah is keenly interested in you.</b>
-                    </p>
-                    <p>
-                        Jehovah owns everything. The mountains, the stars, the water. What could we possibly give Him? <span class="pause-dot"></span>
-                    </p>
-                    <p class="text-xl font-bold text-indigo-800">
-                        We can give Him the one thing He will never take by force: Our heart.
-                    </p>
-                    <p>
-                        We can choose to love Him. It is a <b>dignity he respects.</b> <span class="pause-dot"></span> Now, the <b>handle of the cup is in your hand.</b> It is up to you to decide how to use it. <span class="pause-dot"></span>
-                    </p>
+            <!-- CONCLUSION -->
+            <section>
+                <div class="bg-slate-900 text-white p-12 rounded-[3rem] shadow-2xl space-y-10">
+                    <h2 class="text-4xl font-black uppercase tracking-tighter text-center">Conclusion</h2>
+                    <p class="text-2xl text-center">Does it matter to Jehovah? <b>Absolutely.</b> <span class="pause-dot"></span> <b>Proverbs 27:11</b>: "make my heart rejoice, So that I can make a reply to him who taunts me." <span class="pause-dot"></span></p>
+                    <p class="text-2xl text-center">Jehovah owns everything. What could we possibly give Him? <span class="pause-dot"></span> <b>Our heart.</b> The one thing He will never take by force. <span class="pause-dot"></span></p>
+                    <div class="bg-indigo-600 p-10 rounded-3xl">
+                        <p class="text-4xl font-black text-center leading-tight tracking-tighter">The handle of the cup is in your hand.<br>How will you use it?</p>
+                    </div>
                 </div>
             </section>
-
         </div>
-
-        <footer class="text-center text-[10px] text-slate-400 uppercase tracking-[0.2em] font-medium py-10">
-            End of Discourse — How to Make Decisions That Lead to Success
-        </footer>
     </div>
 
     <script>
-        let timeLeft = 1800; // 30 minutes in seconds
+        // TIMER LOGIC
+        let timeLeft = 1800;
         let timerId = null;
         const display = document.getElementById('display');
-        const btn = document.getElementById('startPauseBtn');
+        const startBtn = document.getElementById('startPauseBtn');
 
         function updateDisplay() {
             const mins = Math.floor(timeLeft / 60);
             const secs = timeLeft % 60;
             display.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-            
-            if (timeLeft <= 300) { // Red at 5 minutes
+            if (timeLeft < 300) {
                 display.classList.add('text-red-500');
+                display.classList.remove('text-white');
             } else {
                 display.classList.remove('text-red-500');
+                display.classList.add('text-white');
             }
         }
 
@@ -416,9 +401,8 @@
             if (timerId) {
                 clearInterval(timerId);
                 timerId = null;
-                btn.textContent = 'RESUME';
-                btn.classList.remove('bg-red-600');
-                btn.classList.add('bg-indigo-600');
+                startBtn.textContent = 'RESUME';
+                startBtn.classList.replace('bg-amber-600', 'bg-indigo-600');
             } else {
                 timerId = setInterval(() => {
                     if (timeLeft > 0) {
@@ -427,12 +411,11 @@
                     } else {
                         clearInterval(timerId);
                         timerId = null;
-                        btn.textContent = 'DONE';
+                        startBtn.textContent = 'DONE';
                     }
                 }, 1000);
-                btn.textContent = 'PAUSE';
-                btn.classList.remove('bg-indigo-600');
-                btn.classList.add('bg-red-600');
+                startBtn.textContent = 'PAUSE';
+                startBtn.classList.add('bg-amber-600');
             }
         }
 
@@ -440,10 +423,34 @@
             clearInterval(timerId);
             timerId = null;
             timeLeft = 1800;
-            btn.textContent = 'START';
-            btn.classList.remove('bg-red-600');
-            btn.classList.add('bg-indigo-600');
             updateDisplay();
+            startBtn.textContent = 'START';
+            startBtn.classList.remove('bg-amber-600');
+            startBtn.classList.add('bg-indigo-600');
+        }
+
+        // TAB LOGIC
+        function switchTab(tab) {
+            const outlineView = document.getElementById('outline-view');
+            const scriptView = document.getElementById('script-view');
+            const outlineTab = document.getElementById('outlineTab');
+            const scriptTab = document.getElementById('scriptTab');
+
+            if (tab === 'outline') {
+                outlineView.classList.add('active');
+                scriptView.classList.remove('active');
+                outlineTab.classList.add('text-indigo-400', 'border-indigo-400');
+                scriptTab.classList.remove('text-indigo-400', 'border-indigo-400');
+                scriptTab.classList.add('text-slate-400', 'border-transparent');
+                window.scrollTo(0,0);
+            } else {
+                scriptView.classList.add('active');
+                outlineView.classList.remove('active');
+                scriptTab.classList.add('text-indigo-400', 'border-indigo-400');
+                outlineTab.classList.remove('text-indigo-400', 'border-indigo-400');
+                outlineTab.classList.add('text-slate-400', 'border-transparent');
+                window.scrollTo(0,0);
+            }
         }
     </script>
 </body>
