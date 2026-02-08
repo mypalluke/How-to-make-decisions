@@ -1,463 +1,421 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>How to Make Decisions That Lead to Success</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
+import React, { useState, useEffect } from 'react';
+import { Play, Pause, RotateCcw, List, AlignLeft } from 'lucide-react';
+
+const App = () => {
+  const [timeLeft, setTimeLeft] = useState(30 * 60);
+  const [isActive, setIsActive] = useState(false);
+  const [activeTab, setActiveTab] = useState('script'); 
+
+  // Timer logic
+  useEffect(() => {
+    let interval = null;
+    if (isActive && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft((time) => time - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      setIsActive(false);
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [isActive, timeLeft]);
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
+  const toggleTimer = () => setIsActive(!isActive);
+  const resetTimer = () => {
+    setIsActive(false);
+    setTimeLeft(30 * 60);
+  };
+
+  // Convert pause markers to red dots
+  const renderPauses = (text) => {
+    const parts = text.split(/(\(pause.*?\))/i);
+    return parts.map((part, index) => {
+      if (part.toLowerCase().includes('pause')) {
+        let count = 1;
+        const lower = part.toLowerCase();
+        if (lower.includes('one')) count = 1;
+        else if (lower.includes('2-3')) count = 3;
+        else if (lower.includes('2')) count = 2;
+        else if (lower.includes('3')) count = 3;
+        else if (lower.includes('4')) count = 4;
+
+        return (
+          <span key={index} className="inline-flex items-center px-1">
+            {[...Array(count)].map((_, i) => (
+              <span key={i} className="text-red-500 text-4xl mx-0.5 leading-none">●</span>
+            ))}
+          </span>
+        );
+      }
+      return <span key={index}>{part}</span>;
+    });
+  };
+
+  const ScriptureBox = ({ children }) => (
+    <div className="my-8 p-8 bg-slate-900 border-l-8 border-indigo-600 rounded-r-2xl shadow-inner border-y border-r border-slate-800">
+      <p className="text-3xl md:text-4xl italic text-indigo-100 font-medium leading-relaxed">
+        {renderPauses(children)}
+      </p>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/40">
+      
+      {/* FIXED TOP HEADER */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 shadow-2xl">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          
+          <div className="flex items-center space-x-3">
+            <button 
+              onClick={toggleTimer} 
+              className={`p-4 rounded-2xl transition-all ${isActive ? 'bg-amber-500 hover:bg-amber-600' : 'bg-emerald-600 hover:bg-emerald-700'} text-white shadow-lg`}
+            >
+              {isActive ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" />}
+            </button>
+            <button 
+              onClick={resetTimer} 
+              className="p-4 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl transition-all shadow-lg border border-slate-700"
+            >
+              <RotateCcw size={24} />
+            </button>
+          </div>
+
+          <div className={`text-7xl font-mono font-black tracking-tighter transition-colors duration-500 ${timeLeft <= 300 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
+            {formatTime(timeLeft)}
+          </div>
+
+          <div className="flex bg-slate-950 p-1.5 rounded-2xl border border-slate-800 shadow-inner">
+            <button 
+              onClick={() => setActiveTab('script')}
+              className={`flex items-center space-x-3 px-8 py-3 rounded-xl font-black text-sm transition-all ${activeTab === 'script' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-500 hover:text-slate-300'}`}
+            >
+              <AlignLeft size={20} />
+              <span>SCRIPT</span>
+            </button>
+            <button 
+              onClick={() => setActiveTab('outline')}
+              className={`flex items-center space-x-3 px-8 py-3 rounded-xl font-black text-sm transition-all ${activeTab === 'outline' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-500 hover:text-slate-300'}`}
+            >
+              <List size={20} />
+              <span>OUTLINE</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-4xl mx-auto px-8 pt-48 pb-40">
         
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #ffffff;
-            color: #1e293b;
-        }
-
-        .scripture-box {
-            border-left: 4px solid #4f46e5;
-            background-color: #f8fafc;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-            border-radius: 0 0.5rem 0.5rem 0;
-            font-style: italic;
-            font-size: 1.35rem;
-            color: #0f172a;
-            line-height: 1.5;
-        }
-
-        .pause-dot {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            background-color: #ef4444;
-            border-radius: 50%;
-            margin: 0 6px;
-            vertical-align: middle;
-        }
-
-        .instruction {
-            color: #b91c1c;
-            font-weight: 800;
-            font-style: italic;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-
-        .tab-content {
-            display: none;
-            padding-bottom: 120px;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .sticky-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 50;
-            background-color: #0f172a;
-        }
-
-        b {
-            color: #000;
-            font-weight: 800;
-            text-decoration: underline;
-            text-decoration-color: #cbd5e1;
-        }
-
-        .script-text {
-            font-size: 1.5rem;
-            line-height: 1.8;
-        }
-
-        @media (min-width: 768px) {
-            .script-text {
-                font-size: 1.75rem;
-            }
-        }
-    </style>
-</head>
-<body class="pt-48">
-
-    <!-- FIXED TIMER & NAV HEADER -->
-    <div class="sticky-header shadow-2xl">
-        <div class="max-w-4xl mx-auto p-4 flex flex-col items-center space-y-4">
-            <!-- Timer Display -->
-            <div class="flex items-center space-x-8">
-                <div class="flex flex-col items-center">
-                    <span class="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Time Remaining</span>
-                    <span id="display" class="text-5xl font-mono font-extrabold text-white">30:00</span>
-                </div>
-                <div class="flex space-x-2">
-                    <button id="startPauseBtn" onclick="toggleTimer()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-xl font-bold text-sm uppercase transition-all shadow-lg">Start</button>
-                    <button onclick="resetTimer()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-4 py-3 rounded-xl font-bold text-sm uppercase transition-all">Reset</button>
-                </div>
-            </div>
-
-            <!-- Tab Navigation -->
-            <div class="flex w-full border-t border-slate-700 pt-3">
-                <button id="outlineTab" onclick="switchTab('outline')" class="flex-1 py-3 text-center font-bold text-xs uppercase tracking-widest text-indigo-400 border-b-4 border-indigo-400 transition-all">Outline View</button>
-                <button id="scriptTab" onclick="switchTab('script')" class="flex-1 py-3 text-center font-bold text-xs uppercase tracking-widest text-slate-400 border-b-4 border-transparent transition-all">Full Script (Word for Word)</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="max-w-4xl mx-auto px-6">
-
-        <!-- TAB 1: OUTLINE -->
-        <div id="outline-view" class="tab-content active space-y-12">
-            <h1 class="text-3xl font-black text-slate-900 border-b-4 border-slate-100 pb-4 uppercase tracking-tighter text-center">Presentation Outline</h1>
+        {activeTab === 'script' ? (
+          <div className="space-y-12 text-3xl md:text-4xl leading-relaxed font-normal text-slate-300">
             
-            <div class="space-y-12 py-6">
-                <section>
-                    <div class="flex items-center mb-4">
-                        <span class="bg-slate-100 text-slate-500 px-3 py-1 rounded-md font-bold text-xs mr-4">30:00</span>
-                        <h3 class="text-indigo-600 font-black text-xl uppercase tracking-wide">I. Free Will (5 Min)</h3>
-                    </div>
-                    <ul class="list-disc pl-8 space-y-3 text-2xl font-medium">
-                        <li>Water Analogy: Survive vs Thrive.</li>
-                        <li><b>Deuteronomy 30:19</b> — Setting the scene for Israel.</li>
-                        <li>Free Will: "You must choose."</li>
-                        <li>Experienced Survivalist Guide analogy.</li>
-                    </ul>
-                </section>
+            {/* SECTION I */}
+            <section className="space-y-10">
+              <div className="flex items-center space-x-4 border-b border-slate-800 pb-4">
+                <span className="text-sm bg-indigo-900 text-indigo-300 px-4 py-2 rounded-full font-black tracking-[0.2em]">30:00 - 26:00</span>
+                <h2 className="text-white font-black text-2xl uppercase tracking-widest">JEHOVAH HAS GIVEN US FREE WILL (4 min)</h2>
+              </div>
+              
+              <p>{renderPauses("Water is essential to life, without it you cannot survive long. (pause one beat)")}</p>
+              
+              <p>{renderPauses("There is a difference between surviving and living a good life, wouldn’t you agree? (pause 2 beats and look at audience)")}</p>
+              
+              <p>Can you survive on very poor quality water? Yes, you can. Under a circumstance where you had to choose to drink bad tasting water and death, we would probably choose to live. But there is some water that is completely undrinkable, if you drank it could actually speed up your death. Poisoned or polluted water, or sea water.</p>
+              
+              <p className="font-bold text-white uppercase tracking-tight">The point is we need water to survive, but we need pure clean water to thrive.</p>
+              
+              <p>It is similar with decisions. Making decisions is essential to life. In fact, that is a scriptural statement.</p>
+              
+              <p>{renderPauses("Turn with me to Deuteronomy 30:19. (pause 2 beats) Notice what the creator puts before his servants. As we are reading this, keep this in mind. Jehovah had clearly taught Israel what was right, what was wrong, and the consequences for each. With that loving guidance in place, notice what he says at…")}</p>
+              
+              <ScriptureBox>
+                {`19 I take the heavens and the earth as witnesses against you today that I have put life and death before you, the blessing and the curse;+ and you must choose life (pause 3 beats) so that you may live,+ you and your descendants`}
+              </ScriptureBox>
 
-                <section>
-                    <div class="flex items-center mb-4">
-                        <span class="bg-slate-100 text-slate-500 px-3 py-1 rounded-md font-bold text-xs mr-4">25:00</span>
-                        <h3 class="text-indigo-600 font-black text-xl uppercase tracking-wide">II. Equipment (5 Min)</h3>
-                    </div>
-                    <ul class="list-disc pl-8 space-y-3 text-2xl font-medium">
-                        <li>The right tools: manual, system, test kit.</li>
-                        <li><b>Isaiah 48:17</b> — Benefit yourself.</li>
-                        <li>Pondering Psalm 119:97, 100 — The "Source Code."</li>
-                        <li>Conscience Calibration (<b>Hebrews 5:14</b>).</li>
-                    </ul>
-                </section>
-
-                <section>
-                    <div class="flex items-center mb-4">
-                        <span class="bg-slate-100 text-slate-500 px-3 py-1 rounded-md font-bold text-xs mr-4">20:00</span>
-                        <h3 class="text-indigo-600 font-black text-xl uppercase tracking-wide">III. 4-Step Filter (10 Min)</h3>
-                    </div>
-                    <ol class="list-decimal pl-8 space-y-4 text-2xl font-bold">
-                        <li>Step 1: Don't be Hasty (<b>Pr 21:5, Deut 32:29</b>).</li>
-                        <li>Step 2: Pray for Wisdom (<b>James 1:5</b>).</li>
-                        <li>Step 3: Thorough Research (<b>Prov 2:3-5</b>).</li>
-                        <li>Step 4: Analyze Motives (<b>Prov 16:2</b>).</li>
-                        <li>Warning: Feedback Loop vs Decisiveness.</li>
-                    </ol>
-                </section>
-
-                <section>
-                    <div class="flex items-center mb-4">
-                        <span class="bg-slate-100 text-slate-500 px-3 py-1 rounded-md font-bold text-xs mr-4">08:00</span>
-                        <h3 class="text-indigo-600 font-black text-xl uppercase tracking-wide">IV. Implementation (4 Min)</h3>
-                    </div>
-                    <ul class="list-disc pl-8 space-y-3 text-2xl font-medium">
-                        <li>3-Day Rule (Lethal Inaction).</li>
-                        <li><b>Philippians 2:13</b> — Energy to lift the glass.</li>
-                        <li>Handling Hardships (<b>Ps 34:19</b>) and Dead Ends (<b>Eccl 3:6</b>).</li>
-                    </ul>
-                </section>
-
-                <section>
-                    <div class="flex items-center mb-4">
-                        <span class="bg-slate-100 text-slate-500 px-3 py-1 rounded-md font-bold text-xs mr-4">04:00</span>
-                        <h3 class="text-indigo-600 font-black text-xl uppercase tracking-wide">V. Most Important Decision (4 Min)</h3>
-                    </div>
-                    <ul class="list-disc pl-8 space-y-3 text-2xl font-medium">
-                        <li><b>Matthew 16:24</b> — Dedication and Baptism.</li>
-                        <li><b>Luke 14:28</b> — Calculate the expense.</li>
-                        <li><b>James 4:8, 17</b> — Sin of knowing but not doing.</li>
-                    </ul>
-                </section>
-
-                <section>
-                    <div class="flex items-center mb-4">
-                        <span class="bg-slate-100 text-slate-500 px-3 py-1 rounded-md font-bold text-xs mr-4">02:00</span>
-                        <h3 class="text-indigo-600 font-black text-xl uppercase tracking-wide">VI. Conclusion (2 Min)</h3>
-                    </div>
-                    <ul class="list-disc pl-8 space-y-3 text-2xl font-medium">
-                        <li><b>Proverbs 27:11</b> — Making Jehovah's heart rejoice.</li>
-                        <li>The Handle of the Cup.</li>
-                    </ul>
-                </section>
-            </div>
-        </div>
-
-        <!-- TAB 2: FULL SCRIPT (WORD FOR WORD) -->
-        <div id="script-view" class="tab-content script-text space-y-16">
-            
-            <!-- SECTION I -->
-            <section>
-                <div class="flex items-center space-x-3 mb-8">
-                    <span class="bg-indigo-600 text-white px-3 py-1 rounded font-black text-sm uppercase">30:00</span>
-                    <h2 class="text-3xl font-black text-slate-900 uppercase tracking-tighter">JEHOVAH HAS GIVEN US FREE WILL (5 min)</h2>
-                </div>
-                <div class="space-y-8">
-                    <p><b>Water is essential to life</b>, without it you cannot survive long. <span class="pause-dot"></span></p>
-                    <p>There is a difference between surviving and living a good life, <b>wouldn’t you agree?</b> <span class="pause-dot"></span></p>
-                    <p>Can you survive on very poor quality water? Yes, you can. Under a circumstance where you had to choose to drink bad tasting water and death, we would probably choose to live. <span class="pause-dot"></span> But there is some water that is completely undrinkable, if you drank it could actually speed up your death. <b>Poisoned or polluted water, sea water.</b> <span class="pause-dot"></span></p>
-                    <p>The point is we need water to survive, but we need <b>pure clean water to thrive.</b> <span class="pause-dot"></span></p>
-                    <p>It is similar with decisions. <b>Making decisions is essential to life.</b> In fact, that is a scriptural statement. <span class="pause-dot"></span></p>
-                    <p>Turn with me to <b>Deuteronomy 30:19.</b> Notice that what the creator puts before his servants. <span class="pause-dot"></span></p>
-                    <p>As we are reading this, keep this in mind. <b>The nation of Isreal was a special nation to Jehovah.</b> This nation, he chose to guide them and teach them what was right and what was wrong. He gave them laws and told them the consequences for deviating from these laws. <b>In chapter 27 the laws are written out on stone.</b> In chapter 28, Jehovah teaches the nation what will occur if they listen and obey, <b>blessings so wonderful.</b> In that same chapter he outlines the curses that would come upon them if they disobey. <span class="pause-dot"></span></p>
-                    
-                    <div class="scripture-box">
-                        <span class="instruction">Read Deuteronomy 30:19</span>
-                        19 I take the heavens and the earth as witnesses against you today that I have put life and death before you, the blessing and the curse;+ and you must choose life so that you may live,+ you and your descendants
-                    </div>
-
-                    <p><b>You must choose.</b> <span class="pause-dot"></span></p>
-                    <p>Jehovah taught them what was right and wrong so they could understand. <b>He never took away their free will.</b> <span class="pause-dot"></span></p>
-                    <p>Jehovah, the Creator, respects us enough to say: "You must choose." He already knows what is best for us; he wants us not only to live, but to thrive—and yet he doesn’t make us do anything. <b>It really is our choice.</b> <span class="pause-dot"></span></p>
-                    <p>The situation is the same today as with the israelites. There were other ways to live. Other gods to worship. Jehovah wasn’t going to stop them from going that direction, but he warned them. <span class="pause-dot"></span></p>
-                    <p>Imagine being with an <b>experienced survivalist guide</b> on a hike in the woods. He knows all the plants you can eat, he has all the tools for survival, and a filter for the water you find. <b>Wouldn’t you ask for his help as you are walking along?</b> <span class="pause-dot"></span></p>
-                    <p>With Jehovah’s help, we can make wise decisions in every aspect of our life. Today we will see the equipment Jehovah gives to make wise choices, a four step process to make good decisions, and the importance of implementing those decisions. <b>Im excited to share this with you.</b> <span class="pause-dot"></span></p>
-                </div>
+              <p className="font-black text-indigo-400">You must choose.</p>
+              
+              <p>Jehovah taught them what was right and wrong so they could understand. He never took away their free will.</p>
+              
+              <p>Jehovah, the Creator, respects us enough to say: "You must choose." He already knows what is best for us; he wants us not only to live, but to thrive—and yet he doesn’t make us do anything. It really is our choice.</p>
+              
+              <p>The situation is the same today as with the israelites. There were other ways to live. Other gods to worship. Jehovah wasn’t going to stop them from going that direction, but he warned them.</p>
+              
+              <p>We contrast Jehovah’s invitation with the many "streams" of advice—from social media, from coworkers, or even our own hearts. How do we know what is safe? Imagine being with an experienced survivalist guide on a hike in the woods. Wouldn’t you ask for his help as you are walking along?</p>
+              
+              <p>{renderPauses("With Jehovah’s help, we can make wise decisions in every aspect of our life. (pause one beat) Today we will see the equipment Jehovah gives to make wise choices, a four step process to make good decisions, and the importance of implementing those decisions. Im excited to share this with you.")}</p>
             </section>
 
-            <!-- SECTION II -->
-            <section>
-                <div class="flex items-center space-x-3 mb-8">
-                    <span class="bg-indigo-600 text-white px-3 py-1 rounded font-black text-sm uppercase">25:00</span>
-                    <h2 class="text-3xl font-black text-slate-900 uppercase tracking-tighter">II: JEHOVAH HAS EQUIPPED US TO MAKE GOOD DECISIONS (5 min)</h2>
-                </div>
-                <div class="space-y-8">
-                    <p>To have good clean water, you need the <b>right tools:</b> You need a filtration system, you need to know how to use the system, so you need the <b>manual</b>, and you need a <b>test kit</b> to ensure the water is safe. <span class="pause-dot"></span></p>
-                    <p>To make good decisions, Jehovah has equipped us with the tools to make <b>good clean decisions.</b> <span class="pause-dot"></span> We have the Bible in its entirety, we have been endowed with <b>thinking ability</b>, and been given a <b>conscience</b> that when trained by bible principles can test out decisions instantly. <span class="pause-dot"></span></p>
-                    <p>Jehovah doesn’t just drop off these tools to us and hope for the best, notice his interest in each and everyone of us at <b>Isaiah 48:17</b></p>
-                    
-                    <div class="scripture-box">
-                        <span class="instruction">Read Isaiah 48:17</span>
-                        17 This is what Jehovah says, your Repurchaser, the Holy One of Israel: “I, Jehovah, am your God, The One teaching you to benefit yourself, The One guiding you in the way you should walk.
-                    </div>
+            {/* SECTION II */}
+            <section className="space-y-10 pt-10">
+              <div className="flex items-center space-x-4 border-b border-slate-800 pb-4">
+                <span className="text-sm bg-indigo-900 text-indigo-300 px-4 py-2 rounded-full font-black tracking-[0.2em]">26:00 - 20:00</span>
+                <h2 className="text-white font-black text-2xl uppercase tracking-widest">II: JEHOVAH HAS EQUIPPED US TO MAKE GOOD DECISIONS (6 min)</h2>
+              </div>
+              
+              <p>To have good clean water, you need the right tools: You need a filtration system, you need to know how to use the system, so you need the manual, and you need a test kit to ensure the water is safe.</p>
+              
+              <p>To make good decisions, Jehovah has equipped us with the tools to make good clean decisions. We have the Bible in its entirety, we have been endowed with thinking ability, and been given a conscience that when trained by bible principles can test out decisions instantly.</p>
+              
+              <p>{renderPauses("Jehovah doesn’t just drop off these tools to us and hope for the best, notice his interest in each and everyone of us at Isaiah 48:17")}</p>
+              
+              <ScriptureBox>
+                17 This is what Jehovah says, your Repurchaser, the Holy One of Israel: “I, Jehovah, am your God, The One teaching you to benefit yourself, The One guiding you in the way you should walk. (pause 2-3 beats)
+              </ScriptureBox>
 
-                    <p>Jehovah is our teacher, he wants us to <b>benefit ourselves.</b> We have the manual to life at our disposal: The Bible. <span class="pause-dot"></span></p>
-                    <p>If you bought a piece of <b>high-end machinery</b> for filtering water, the first thing you’d do is <b>check the manual.</b> Any serious manual says in bold letters: "Read and fully understand all instructions before operating this device." Why? <span class="pause-dot"></span> Because the manufacturer knows that if you just "wing it," you won't get the results they promised. <span class="pause-dot"></span></p>
-                    <p>Jehovah doesn't want us to just "glance" at the Bible when we're in trouble; he wants us to <b>understand the process beforehand.</b> Imagine if you only looked at the manual after you or someone in your family got <b>violently ill</b> from the water you drank. <b>By then, the damage is done.</b> <span class="pause-dot"></span></p>
-                    <p>So what must we do? <b>We should make it a goal to read his word everyday.</b> <span class="pause-dot"></span></p>
-                    <p>But we shouldn’t just read it. <b>We must also think deeply on it.</b> <span class="pause-dot"></span></p>
-                    <p>In a world that prizes "life experience," the Psalmist made a bold claim: that there is a source of wisdom that <b>surpasses the experience of older men.</b> Let’s look at his secret in <b>Psalm 119:97 and 100</b>:</p>
-                    <div class="scripture-box">
-                        "How I do love your law! I ponder over it all day long... I act with more understanding than older men, Because I observe your orders."
-                    </div>
-                    <p>He had more understanding because he didn't just know the orders—<b>he pondered them.</b> <span class="pause-dot"></span> What does it mean to ponder over something? <span class="pause-dot"></span></p>
-                    
-                    <p>Let’s use a simple example Jesus gave us. The Law said: <b>"You must not murder."</b> That is a point-blank command. But using thinking ability, we can see the source of that command. What leads to murder? <b>Hatred.</b> What leads to hatred? Viewing someone as not worth living because they have an opposing viewpoint. It starts with meditating on <b>irritating qualities</b> until you can't even stand to be in the same room as them. <span class="pause-dot"></span></p>
-                    
-                    <p>This is why Jesus said in <b>Matthew 5:22</b> that even "continuing wrathful" or using "words of contempt" makes us accountable. And so Jesus outlines actions to take if we know someone has something against us or someone is irritated with us. <b>Make things right.</b> You cannot worship Jehovah whom you cannot see, if you hate your brother whom you can see. <span class="pause-dot"></span> By pondering, we found a principle that covers <b>everything</b> from how we drive our car to how we treat a stranger, to even how we deal with irritations in our family or the congregation. If we can overlook something. <b>We should overlook it.</b> If we can’t we must fix things using Bible principles. <span class="pause-dot"></span></p>
-
-                    <p>In the bible we are given <b>“case studies”</b> examples of faithful ones that followed Gods laws and principles and examples of ones that disobeyed Gods laws and standards. We see how things turned out for them. <b>1 Cor. 10:11</b> says that these were written as a warning to us, the ones upon ‘whom the ends of the systems of things have come’. <span class="pause-dot"></span></p>
-                    
-                    <p>So we read Gods word, we ponder over it. What happens? <b>Our conscience that Jehovah has given us is trained.</b> This acts as a sensor to recognize when something is wrong with something we decided on. <span class="pause-dot"></span></p>
-                    
-                    <p>Even the best filtration system won't work if the sensors aren't <b>calibrated</b> to recognize what is clean and what is toxic. Our conscience is that "hardware." We calibrate it using <b>"solid food"</b>—the deeper principles of the Bible. As <b>Hebrews 5:14</b> explains, we don't just learn these to pass a test; we use them as a daily calibration tool. <span class="pause-dot"></span></p>
-                    
-                    <p className="bg-indigo-50 p-8 rounded-2xl italic font-medium">
-                        We relize we are equipped with these powerful tools. Now we just need to know how to put them into action. Following these bible based steps is similar to a water filtration system.
-                    </p>
-                </div>
+              <p>Jehovah is our teacher, he wants us to benefit ourselves. We have the manual to life at our disposal: The Bible.</p>
+              
+              <p>If you bought a piece of high-end machinery for filtering water, the first thing you’d do is check the manual. Any serious manual says in bold letters: "Read and fully understand all instructions before operating this device." Why? Because the manufacturer knows that if you just "wing it," you won't get the results they promised.</p>
+              
+              <p>Jehovah doesn't want us to just "glance" at the Bible when we're in trouble; he wants us to understand the process beforehand. Waiting to consult the manual until after someone gets sick is too late.</p>
+              
+              <p>{renderPauses("So we read God’s Word regularly - and we ponder over it. (pause 2 beats)")}</p>
+              
+              <p>In a world that prizes "life experience," the Psalmist made a bold claim: that there is a source of wisdom that surpasses the experience of older men. Let’s look at his secret in Psalm 119:97 and 100:</p>
+              
+              <ScriptureBox>
+                "How I do love your law! I ponder over it all day long... I act with more understanding than older men, Because I observe your orders."
+              </ScriptureBox>
+              
+              <p>He had more understanding because he didn't just know the orders—he pondered them.</p>
+              
+              <p>What does it mean to ponder over something? It’s a bit like reverse engineering. It’s taking something apart and seeing how and why it works.</p>
+              
+              <p>Let’s use a simple example Jesus gave us. We see it at Matthew 5:21-23. The Law said: "You must not murder." Jesus lifted the cover off God’s commands.. Murder begins with hatred, so even contemptuous speech matters. Even our thoughts matter. When we ponder over Gods laws it helps us to stop problems at the where the first malfunction starts. We see the principles behind the laws. We learn about Jehovah and who he really is. And we see practical things we need to do in our daily life.</p>
+              
+              <p>In the bible we are given “case studies” examples of faithful ones that followed Gods laws and principles and examples of ones that disobeyed Gods laws and standards. We see how things turned out for them. 1 Cor. 10:11 says that these were written as a warning to us, the ones upon ‘whom the ends of the systems of things have come’.</p>
+              
+              <p>So we read Gods word, we ponder over it. What happens? Our conscience that Jehovah has given us is trained. This acts as a sensor to recognize when something is wrong with something we decided on.</p>
+              
+              <p>Even the best water filtration system won't work if the sensors aren't calibrated to recognize what is clean and what is toxic. Our conscience is that "hardware." We calibrate it using "solid food"—the deeper principles of the Bible. As Hebrews 5:14 explains, we don't just learn these to pass a test; we use them as a daily calibration tool.</p>
+              
+              <p className="font-bold text-indigo-400 italic">Transition from ii to iii: We realize we are equipped with these powerful tools. Now we just need to know how to put them into action. Following these bible based steps is similar to a water filtration system.</p>
             </section>
 
-            <!-- SECTION III -->
-            <section>
-                <div class="flex items-center space-x-3 mb-8">
-                    <span class="bg-indigo-600 text-white px-3 py-1 rounded font-black text-sm uppercase">20:00</span>
-                    <h2 class="text-3xl font-black text-slate-900 uppercase tracking-tighter">III. FOLLOW STEPS THAT LEAD TO A GOOD DECISION (10 min.)</h2>
-                </div>
-                <div class="space-y-12">
-                    <p>Water filtration process is 4 stage process. <b>Sedimentary trap, uv light, high pressure filtration, final analysis.</b> The four steps to making a good decision: <b>patience, prayer, research, analys motives</b> <span class="pause-dot"></span></p>
-                    <p>Jehovah has given us a <b>four-step purification process.</b> This could be our decision filtration system. It’s a powerful metal tool that takes a muddy, high-pressure situation and refines it until what is left is a clear, safe decision. <span class="pause-dot"></span></p>
-                    
-                    <div>
-                        <span class="instruction">Step 1: based on Pr 21:5. Don’t be hasty (stop! think!).</span>
-                        <p><b>“The plans of the diligent surely lead to success, But all who are hasty surely head for poverty.’</b> <span class="pause-dot"></span> When you’re standing in front of a stream and you’re thirsty, the pressure to just 'drink now' is intense. Life is the same. The pressure to make a quick decision can be muddy. <span class="pause-dot"></span> In a physical water filter, the first stage is often a <b>sediment trap.</b> It relies on gravity and time. If you try to force muddy water through a fine filter immediately, you’ll <b>clog the whole system.</b> <span class="pause-dot"></span> Spiritually, our "mud" is often our <b>raw emotions</b>—panic, pride, or the pressure to act now. <span class="pause-dot"></span></p>
-                        <div class="scripture-box">
-                            <span class="instruction">Read Deuteronomy 32:29</span>
-                            29If only they were wise! They would ponder over this. They would think about their outcome.
-                        </div>
-                        <p>As <b>Deuteronomy 32:29</b> suggests, a wise person <b>"ponders over"</b> the outcome. By being patient, we let the "mud" of our emotions settle so we can actually see the situation for what it is. <span class="pause-dot"></span> This is not a wait and see what happens attitude, it is actually <b>diligently pondering the situation</b> and taking further steps to clarify what may be best. <span class="pause-dot"></span></p>
-                        <p>If you rush into a decision, you may overlook important information. <b>Take time to consider your options carefully.</b> <span class="pause-dot"></span></p>
-                        <p className="bg-red-50 p-6 rounded-xl border border-red-100">
-                            <b>Do not make decisions based solely on your emotions or feelings.</b> The Bible warns us that we cannot always trust our heart. (Proverbs 28:26; Jeremiah 17:9) For example, we may not make good decisions when we are angry, depressed, discouraged, impatient, or even overly tired. <span class="pause-dot"></span>
-                        </p>
-                        <p>Stopping and thinking about things and not making an impulsive decision helps you to remember <b>you may not have all the answers.</b> So now with clarity you remember then to pray. Youve thought things through. You now have the <b>Clarity of mind to even know what to pray for.</b> <span class="pause-dot"></span></p>
-                    </div>
+            {/* SECTION 3 */}
+            <section className="space-y-10 pt-10">
+              <div className="flex items-center space-x-4 border-b border-slate-800 pb-4">
+                <span className="text-sm bg-indigo-900 text-indigo-300 px-4 py-2 rounded-full font-black tracking-[0.2em]">20:00 - 08:00</span>
+                <h2 className="text-white font-black text-2xl uppercase tracking-widest">III. FOLLOW STEPS THAT LEAD TO A GOOD DECISION (10 min.)</h2>
+              </div>
+              
+              <p>Water filtration process is 4 stage process. Sedimentary trap, uv light, high pressure filtration, final analysis. The four steps to making a good decision: patience, prayer, research, analys motives</p>
+              
+              <p>Jehovah has given us a four-step purification process. This could be our decision filtration system. It’s a powerful metal tool that takes a muddy, high-pressure situation and refines it until what is left is a clear, safe decision.</p>
 
-                    <div>
-                        <span class="instruction">Step 2: Pray for wisdom.</span>
-                        <p>In water filtration Once the water looks clear, we use a <b>UV Light.</b> UV light doesn't catch dirt; it disrupts the DNA of invisible bacteria so they can't reproduce. <b>This cannot be effective when the water is cloudy.</b> <span class="pause-dot"></span></p>
-                        <p>How can praying for wisdom help? <b>James 1:5</b></p>
-                        <div class="scripture-box">
-                            5So if any one of you is lacking in wisdom, let him keep asking God, for he gives generously to all and without reproaching, and it will be given him.
-                        </div>
-                        <p>When we pray as James 1:5 suggests, we are asking Jehovah for His light. We are asking Him to neutralize the invisible <b>"spiritual viruses"</b>—those subtle worldly philosophies—that might look harmless but could make us spiritually ill. <span class="pause-dot"></span> Prayer <b>"sanitizes" our thinking</b> at a level we can't see with the naked eye. We are asking Jehovah for his wisdom on the matter. We are showing him we dont want to rely on ourselves but we trust him. <b>He gives generously.</b> <span class="pause-dot"></span></p>
-                    </div>
+              <p>So what’s the first step in our filter?</p>
 
-                    <div>
-                        <span class="instruction">Step 3: Do thorough research.</span>
-                        <p>In water filtration, This is the stage of <b>high-pressure filtration</b>, like a fine membrane. It forces the water through a barrier so microscopic that only the pure water molecules can pass. <span class="pause-dot"></span> This step is the <b>hard work</b>, this is where we separate what feels right from what is right. <b>The answers are there.</b> What will you find? <b>Provers 2:3-5</b> shows us: <span class="pause-dot"></span></p>
-                        <div class="scripture-box">
-                            3Moreover, if you call out for understanding And raise your voice for discernment; 4If you keep seeking for it as for silver, And you keep searching for it as for hidden treasures; 5Then you will understand the fear of Jehovah, And you will find the knowledge of God.
-                        </div>
-                        <p>This is where we <b>"dig deep"</b> into the Bible as Proverbs 2:3-5 describes. We are putting our thoughts under the <b>"pressure" of God’s Word.</b> This process separates human thinking from Jehovah’s wisdom. It’s not always the path of least resistance, but it’s the only way to get the salt out. <span class="pause-dot"></span> We make good use of tools provided through the christian congregation and mature christians although careful not to pressure them to make a decision for us. <span class="pause-dot"></span> We must carry our own load and avoid asking others <b>“what would you do?”</b> the only one we can throw our burdens on is Jehovah. <span class="pause-dot"></span></p>
-                    </div>
+              <div className="space-y-6">
+                <h4 className="text-2xl font-black text-indigo-500 uppercase">Step 1: Patience (Sediment Trap)</h4>
+                <p>{renderPauses("Step 1: based on Pr 21:5 “The plans of the diligent surely lead to success, But all who are hasty surely head for poverty.’ Don’t be hasty (stop! think!). When you’re standing in front of a stream and you’re thirsty, the pressure to just 'drink now' is intense. Life is the same. The pressure to make a quick decision can be muddy. In a physical water filter, the first stage is often a sediment trap. It relies on gravity and time. If you try to force muddy water through a fine filter immediately, you’ll clog the whole system. You have to let it sit so the heavy dirt can sink to the bottom. Spiritually, our \"mud\" is often our raw emotions— (pause one beat) panic, pride, or the pressure to act now.")}</p>
+                
+                <p>Notice the perspective Jehovah encourages us to have before we take a single step</p>
+                <p className="font-bold uppercase tracking-widest text-slate-500 text-sm">Read Deuteronomy 32:29</p>
+                <ScriptureBox>
+                  {`29If only they were wise! They would ponder over this. They would think about their outcome. (pause 3 beats)`}
+                </ScriptureBox>
+                
+                <p>As Deuteronomy 32:29 suggests, a wise person "ponders over" the outcome. By being patient, we let the "mud" of our emotions settle so we can actually see the situation for what it is.</p>
+                
+                <p>This is not a wait and see what happens attitude, it is actually diligently pondering the situation and taking further steps to clarify what may be best.</p>
+                
+                <p>If you rush into a decision, you may overlook important information.</p>
+                
+                <p>Stopping and thinking about things and not making an impulsive decision helps you to remember you may not have all the answers. So now with clarity you remember then to pray. Youve thought things through. You now have the Clarity of mind to even know what to pray for.</p>
+                
+                <p>And that leads us to the next stage in our decision filter:</p>
+              </div>
 
-                    <div>
-                        <span class="instruction">Step 4: Analyze your motives.</span>
-                        <p>Finally, the water has passed through the machine. But before you take a drink, you pour a little into a <b>small glass</b> for a final inspection. You look at it closely: How does it look? How does it smell? And finally, <b>how does it taste?</b> <span class="pause-dot"></span></p>
-                        <p>Jehovah wants us to be honest in all things. So when we make decisions, we want to be honest with ourselves and with others about our motives. <b>If we aren't completely honest, we will likely have difficulty sticking to the decision.</b> Jehovah knows our hearts, we can even fool ourselves sometimes. <b>Pr 16:2 says:</b> All of a man’s ways seem right to him, But Jehovah examines the motives. <span class="pause-dot"></span> It’s important to examine ourselves and really test if our decision is sincere. Because if we are not sincere the decision may not stick even if it was a good decision. <span class="pause-dot"></span></p>
-                        <p className="bg-slate-50 p-6 rounded-xl italic">
-                            <b>Example:</b> Consider a young brother who decides to become a Regular Pioneer. After a while, he’s struggling and losing his joy. When he looks into that small glass, he realizes the <b>"taste" is off</b>—he was primarily motivated by a desire to please his parents or others. But notice how running that decision through the filter machine again benefits him. He goes back to Stage 1. He prays for wisdom. He does thorough research. <b>Finally, he looks at his motives again.</b> This time, he is renewed with vigor and a genuine love for Jehovah. <span class="pause-dot"></span>
-                        </p>
-                        <p className="text-red-700 font-black border-t-2 pt-6 mt-6">
-                            One word of caution for this step four, <b>we might second guess ourselves and keep ruminating</b> over the decision over and over creating a <b>feedback loop.</b> This is not good. If we are not careful we can have a good decision and not implement it and then be stuck with someone else making a decision for us. <span class="pause-dot"></span> <b>If you don’t decide, a decision will be made for you.</b> This is not what Jehovah wants from us. <span class="pause-dot"></span>
-                        </p>
-                        <p className="text-center font-bold italic mt-4 text-indigo-800 uppercase">Patience, Prayer, Research, analys motives</p>
-                    </div>
-                </div>
+              <div className="space-y-6">
+                <h4 className="text-2xl font-black text-indigo-500 uppercase">Step 2: Prayer (UV Light)</h4>
+                <p>Step 2: Pray for wisdom. In water filtration Once the water looks clear, we use a UV Light. UV light doesn't catch dirt; it disrupts the DNA of invisible bacteria so they can't reproduce. This cannot be effective when the water is cloudy.</p>
+                
+                <p>How can praying for wisdom help? James 1:5</p>
+                <ScriptureBox>
+                  5So if any one of you is lacking in wisdom, let him keep asking God, for he gives generously to all and without reproaching, and it will be given him.
+                </ScriptureBox>
+                
+                <p>When we pray as James 1:5 suggests, we are asking Jehovah for His light. We are asking Him to neutralize the invisible "spiritual viruses"—those subtle worldly philosophies—that might look harmless but could make us spiritually ill. Prayer "sanitizes" our thinking at a level we can't see with the naked eye. We are asking Jehovah for his wisdom on the matter. We are showing him we don't want to rely on ourselves but we trust him. He gives generously.</p>
+                
+                <p>Now we have have humbled ourselves we are ready for the next stage</p>
+              </div>
+
+              <div className="space-y-6">
+                <h4 className="text-2xl font-black text-indigo-500 uppercase">Step 3: Research (Membrane)</h4>
+                <p>Step 3: Do thorough research. In water filtration, This is the stage of high-pressure filtration, like a fine membrane. It forces the water through a barrier so microscopic that only the pure water molecules can pass.</p>
+                
+                <p>This step is the hard work, this is where we separate what feels right from what is right. The answers are there. What will you find? Provers 2:3-5 shows us that wisdom is found only when we search for it like a treasure. What will we find? Lets read vs 4 and 5:</p>
+                <ScriptureBox>
+                  3Moreover, if you call out for understanding And raise your voice for discernment; 4If you keep seeking for it as for silver, And you keep searching for it as for hidden treasures; 5Then you will understand the fear of Jehovah, And you will find the knowledge of God.
+                </ScriptureBox>
+                
+                <p>This is where we "dig deep" into the Bible as Proverbs 2:3-5 describes. We are putting our thoughts under the "pressure" of God’s Word. This process separates human thinking from Jehovah’s wisdom. It’s not always the path of least resistance, but it’s the only way to get the salt out.</p>
+                
+                <p>We make good use of tools provided through the christian congregation and mature christians although careful not to pressure them to make a decision for us.</p>
+                
+                <p>We must carry our own load and avoid asking others “what would you do?” the only one we can throw our burdens on is Jehovah.</p>
+                
+                <p>Now finally we are ready for our final stage in our decision filter:</p>
+              </div>
+
+              <div className="space-y-6">
+                <h4 className="text-2xl font-black text-indigo-500 uppercase">Step 4: Analyze Motives (Small Glass)</h4>
+                <p>Step 4: Analyze your motives. Finally, the water has passed through the machine. But before you take a drink, you pour a little into a small glass for a final inspection. You look at it closely: How does it look? How does it smell? And finally, how does it taste?</p>
+                
+                <p>Jehovah wants us to be honest in all things. So when we make decisions, we want to be honest with ourselves and with others about our motives. If we aren't completely honest, we will likely have difficulty sticking to the decision. Jehovah knows our hearts, we can even fool ourselves sometimes. Pr 16:2 says: All of a man’s ways seem right to him, But Jehovah examines the motives. It’s important to examine ourselves and really test if our decision is sincere. Because if we are not sincere the decision may not stick even if it was a good decision.</p>
+                
+                <p className="text-slate-500 font-bold uppercase text-sm border border-slate-800 p-2 inline-block">14:00 min left if less time need to compress</p>
+                
+                <p>Consider a young brother who decides to become a Regular Pioneer—that is, a full-time volunteer teacher of the Bible. After a while, he’s struggling and losing his joy. When he looks into that small glass, he realizes the "taste" is off—he was primarily motivated by a desire to please his parents or others. But notice how running that decision through the filter machine again benefits him.</p>
+                
+                <p>First, he isn't hasty to just quit. He goes back to Stage 1 and thinks about how his decision affects his relationship with Jehovah. Then he prays for wisdom, asking Jehovah to help him find and apply relevant principles. Next, he does thorough research, using the publications and talking to experienced elders and other full-time ministers. He is careful not to ask them to make the decision for him; he remains the captain of his ship. Finally, he looks at his motives again. This time, he is renewed with vigor and a genuine love for Jehovah. He knows he is no longer being guided solely by emotion.</p>
+                
+                <p className="text-red-400 font-bold border-t border-slate-800 pt-6">
+                  One word of caution for this step four, we might second guess ourselves and keep ruminating over the decision over and over creating a feedback loop. This is not good. If we are not careful we can have a good decision and not implement it and then be stuck with someone else making a decision for us.
+                </p>
+                
+                <p>If you don’t decide, a decision will be made for you. This is not what Jehovah wants from us.</p>
+                
+                <p className="text-center font-bold text-indigo-400 uppercase tracking-widest pt-4">Patience, Prayer, Research, analys motives</p>
+              </div>
             </section>
 
-            <!-- SECTION IV -->
-            <section>
-                <div class="flex items-center space-x-3 mb-8">
-                    <span class="bg-indigo-600 text-white px-3 py-1 rounded font-black text-sm uppercase">08:00</span>
-                    <h2 class="text-3xl font-black text-slate-900 uppercase tracking-tighter">IMPLEMENT YOUR DECISION (4 min.)</h2>
-                </div>
-                <div class="space-y-8">
-                    <p>A purified decision is useless if you never <b>“drink the water”.</b> <span class="pause-dot"></span> Do you know how long it would take if you don’t take in any water either by food or drink? <b>You could perish in as little as three days!</b> <span class="pause-dot"></span></p>
-                    <p>We can get stuck in a "Feedback Loop" of second-guessing. Paul encouraged the Corinthians to <b>"complete what you started"</b> (2 Cor 8:10, 11). <span class="pause-dot"></span></p>
-                    
-                    <div class="scripture-box">
-                        <span class="instruction">Read Philippians 2:13</span>
-                        13For God is the one who for the sake of his good pleasure energizes you, giving you both the desire and the power to act.
-                    </div>
-
-                    <p>Jehovah gives us the <b>"energy to lift the glass."</b> <span class="pause-dot"></span> This doesn't mean the path will be easy. Even good decisions can lead to hardships. <b>Psalm 34:19 says:</b> ”Many are the hardships of the righteous one,” <span class="pause-dot"></span></p>
-                    <p>The truth is, some good decisions will lead us down a path of great difficulties. Think of our brothers in countries where simply serving Jehovah can land someone in prison. Was that a bad decision? <b>Of course not!</b> It was the best decision possible, even if it led to a "hardship." <span class="pause-dot"></span></p>
-                    <p>However, what if we make a decision and then find out we simply cannot fulfill the role? <b>We must be realistic.</b> None of us have the time, resources, or energy to do everything we would like to do. When necessary, we may need to change a decision that was beyond our ability to accomplish. As <b>Ecclesiastes 3:6 says,</b> there is "A time to search and a time to give up as lost; A time to keep and a time to throw away." <span class="pause-dot"></span></p>
-                    <p>Some may feel deeply discouraged if they cannot finish what they started. That is understandable. But if we come to a dead end, would it be wise to expend all our precious resources if it seems the endeavor is <b>"lost"?</b> There is a principle here we cannot ignore: sometimes, we must change our decision. But we don't just "give up" blindly. We go through the same <b>four-step process again</b>, and that new decision can be a good one, too. <span class="pause-dot"></span></p>
-                </div>
+            {/* SECTION 4 */}
+            <section className="space-y-10 pt-10">
+              <div className="flex items-center space-x-4 border-b border-slate-800 pb-4">
+                <span className="text-sm bg-indigo-900 text-indigo-300 px-4 py-2 rounded-full font-black tracking-[0.2em]">08:00 - 04:00</span>
+                <h2 className="text-white font-black text-2xl uppercase tracking-widest">IMPLEMENT YOUR DECISION (4 min.)</h2>
+              </div>
+              
+              <p className="font-bold text-white text-4xl leading-tight">A purified decision is useless if you never “drink the water”.</p>
+              
+              <p>Do you know how long it you'd survive if you don’t take in any water either by food or drink?</p>
+              
+              <p className="text-red-400 font-black">You could perish in as little as three days!</p>
+              
+              <p>We can get stuck in a "Feedback Loop" of second-guessing. Paul encouraged the Corinthians to "complete what you started" (2 Cor 8:10, 11).</p>
+              
+              <p>We are not without help, Jehovah gives us the "energy to lift the glass." (Phil 2:13) says ‘13For God is the one who for the sake of his good pleasure energizes you, giving you both the desire and the power to act.’</p>
+              
+              <p>This doesn't mean the path will be easy. Even good decisions can lead to hardships (Psalm 34:19) says” Many are the hardships of the righteous one,”</p>
+              
+              <p>The truth is, some good decisions will lead us down a path of great difficulties. Think of our brothers in countries where simply serving Jehovah can land someone in prison. Was that a bad decision? Of course not! It was the best decision possible, even if it led to a "hardship."</p>
+              
+              <p>However, what if we make a decision and then find out we simply cannot fulfill the role? We must be realistic. None of us have the time, resources, or energy to do everything we would like to do. When necessary, we may need to change a decision that was beyond our ability to accomplish. As Ecclesiastes 3:6 says, there is "A time to search and a time to give up as lost; A time to keep and a time to throw away."</p>
+              
+              <p>Some may feel deeply discouraged if they cannot finish what they started. That is understandable. But if we come to a dead end, would it be wise to expend all our precious resources—our time, energy, and money—if it seems the endeavor is "lost"? There is a principle here we cannot ignore: sometimes, we must change our decision. But we don't just "give up" blindly. We go through the same four-step process again, and that new decision can be a good one, too.</p>
             </section>
 
-            <!-- SECTION V -->
-            <section>
-                <div class="flex items-center space-x-3 mb-8">
-                    <span class="bg-indigo-600 text-white px-3 py-1 rounded font-black text-sm uppercase">04:00</span>
-                    <h2 class="text-3xl font-black text-slate-900 uppercase tracking-tighter">YOUR MOST IMPORTANT DECISION (4 min.)</h2>
-                </div>
-                <div class="space-y-8">
-                    <p>All of us here have a decision before us. It’s a decision that Jesus set before every one of us at <b>Matthew 16:24</b>: "If anyone wants to come after me, let him disown himself and pick up his torture stake and keep following me." This is the decision to <b>dedicate our lives to Jehovah and imitate his son, Jesus.</b> This is not something we should take lightly. <span class="pause-dot"></span></p>
-                    <p>Jesus highlighted this at <b>Luke 14:28:</b> "For example, who of you wanting to build a tower does not first sit down and calculate the expense to see if he has enough to complete it?" Jesus uses a very practical example—<b>building a tower</b>—to show that we must "calculate the cost." We should go through the process. Before making this life-altering decision, we shouldn't be hasty; we must pray, do research, and examine our motives. <span class="pause-dot"></span></p>
-                    <p>Once you have done that, what is the next step? <b>James 4:8 says:</b> "Draw close to God, and he will draw close to you." Jehovah is inviting us, but we are the ones who must take the step. What happens if we know it’s the right thing to do, but we never <b>"drink the water"?</b> <b>Verse 17 warns us:</b> "Therefore, if someone knows how to do what is right and yet does not do it, it is a sin for him." <span class="pause-dot"></span></p>
-                    <p>What is preventing you from taking that step toward baptism? Is it a lack of clarity? Is it a problem with trusting Jehovah? Or is your conscience or your motives just a bit out of sync? This scriptural decision process—this <b>"purification system"</b>—can help you refine your thoughts so you can finally implement the most important decision of your life: To serve Jehovah with your whole heart, mind, soul, and might. <span class="pause-dot"></span></p>
-                    <p className="border-t pt-8 italic font-bold">
-                        Now, there are some decisions we make that we should never go back on, no matter the difficulties or the resources required. <b>Numbers 30:2 says</b> that if a man makes a vow to Jehovah, "he must not violate his word. He should do everything he vowed he would do." If we have made a dedication vow, or a marriage vow, we must live up to it. Remember, Jehovah has the power to help us, and He wants to help us live up to our word. <span class="pause-dot"></span>
-                    </p>
-                </div>
+            {/* SECTION 5 */}
+            <section className="space-y-10 pt-10">
+              <div className="flex items-center space-x-4 border-b border-slate-800 pb-4">
+                <span className="text-sm bg-indigo-900 text-indigo-300 px-4 py-2 rounded-full font-black tracking-[0.2em]">04:00 - 02:00</span>
+                <h2 className="text-white font-black text-2xl uppercase tracking-widest">YOUR MOST IMPORTANT DECISION (4 min.)</h2>
+              </div>
+              
+              <p>{renderPauses("All of us here have a decision before us. It’s a decision that Jesus set before every one of us at Matthew 16:24: \"If anyone wants to come after me, let him disown himself and pick up his torture stake and keep following me.\" (pause 3 beats) This is the decision to dedicate our lives to Jehovah and imitate his son, Jesus. This is not something we should take lightly.")}</p>
+              
+              <p>Jesus highlighted this at Luke 14:28: "who of you wanting to build a tower does not first sit down and calculate the expense?" in other words, Jesus was teaching the very process we just discussed: don’t be hasty, pray, do research, and examine our motives before committing.</p>
+              
+              <p>Jehovah never rushes us into dedication, but once we are convinced, he expects us to act.</p>
+              
+              <p>{renderPauses("Once you have done that, what is the next step? James 4:8 says: \"Draw close to God, and he will draw close to you.\" Jehovah is inviting us, but we are the ones who must take the step. What happens if we know it’s the right thing to do, but we never \"drink the water\"? Verse 17 warns us: \"Therefore, if someone knows how to do what is right and yet does not do it, it is a sin for him.\" (Pause 4 beats)")}</p>
+              
+              <p>What is preventing you from taking that step toward baptism? Is it a lack of clarity? Is it a problem with trusting Jehovah? Or is your conscience or your motives just a bit out of sync? This scriptural decision process—this "purification system"—can help you refine your thoughts so you can finally implement the most important decision of your life: To serve Jehovah with your whole heart, mind, soul, and might.</p>
+              
+              <p>Now, there are some decisions we make that we should never go back on, no matter the difficulties or the resources required. Numbers 30:2 says that if a man makes a vow to Jehovah, "he must not violate his word. He should do everything he vowed he would do." If we have made a dedication vow, or a marriage vow, we must live up to it. Remember, Jehovah has the power to help us, and He wants to help us live up to our word.</p>
             </section>
 
-            <!-- CONCLUSION -->
-            <section>
-                <div class="bg-slate-900 text-white p-12 rounded-[3rem] shadow-2xl space-y-10">
-                    <h2 class="text-4xl font-black uppercase tracking-tighter text-center">Conclusion: A Gift for the Creator (2 min)</h2>
-                    <p class="text-2xl text-center">Does it really matter to Jehovah what decisions we make? <b>Absolutely.</b> We are a spectacle before the heavens. The Devil is taunting Jehovah, claiming we won't make wise choices and that we won't choose to serve Him. Notice how Jehovah feels about your decisions at <b>Proverbs 27:11:</b> "Be wise, my son, and make my heart rejoice, So that I can make a reply to him who taunts me." <span class="pause-dot"></span></p>
-                    <p class="text-2xl text-center">Jehovah is keenly interested in you. He wants you to be happy, and He knows that His path is the <b>"best life ever,"</b> while any other way leads to disaster. <span class="pause-dot"></span></p>
-                    <p class="text-2xl text-center text-slate-400">Think about this: Jehovah owns everything. He made the mountains, the stars, and the very water we drink. What could we possibly give to the Creator of the universe that He doesn't already have? <span class="pause-dot"></span></p>
-                    <p class="text-2xl text-center font-bold text-indigo-300 uppercase">We can give Him the one thing He will never take by force: Our heart. <span class="pause-dot"></span></p>
-                    <p class="text-2xl text-center">We can make the decision to love Him. We can choose to serve His will with all our strength and give our life-force to Him. What a beautiful thing Jehovah has given us in free will. It is a dignity he respects. <span class="pause-dot"></span></p>
-                    
-                    <div class="bg-indigo-600 p-10 rounded-3xl border-2 border-indigo-400">
-                        <h3 class="text-xl font-black uppercase mb-4 text-indigo-200">Final Appeal</h3>
-                        <p class="text-3xl font-black text-center leading-tight tracking-tighter uppercase">The handle of the cup is in your hand.<br>How will you use it?</p>
-                    </div>
-                </div>
+            {/* CONCLUSION */}
+            <section className="space-y-10 pt-10">
+              <div className="flex items-center space-x-4 border-b border-slate-800 pb-4">
+                <span className="text-sm bg-indigo-900 text-indigo-300 px-4 py-2 rounded-full font-black tracking-[0.2em]">02:00 - END</span>
+                <h2 className="text-white font-black text-2xl uppercase tracking-widest">CONCLUSION: A GIFT FOR THE CREATOR (2 min)</h2>
+              </div>
+              
+              <p>Does it really matter to Jehovah what decisions we make? Absolutely. We are a spectacle before the heavens. The Devil is taunting Jehovah, claiming we won't make wise choices and that we won't choose to serve Him. Notice how Jehovah feels about your decisions at Proverbs 27:11: "Be wise, my son, and make my heart rejoice, So that I can make a reply to him who taunts me."</p>
+              
+              <p>Jehovah is keenly interested in you. He wants you to be happy, and He knows that His path is the "best life ever," while any other way leads to disaster.</p>
+              
+              <p>Think about this: Jehovah owns everything. He made the mountains, the stars, and the very water we drink. What could we possibly give to the Creator of the universe that He doesn't already have?</p>
+              
+              <p className="text-4xl font-black text-indigo-400 uppercase text-center py-6">We can give Him the one thing He will never take by force: Our heart.</p>
+              
+              <p>We can make the decision to love Him. We can choose to serve His will with all our strength and give our life-force to Him. What a beautiful thing Jehovah has given us in free will. It is a dignity he respects. Now, the handle of the cup is in your hand. It is up to you to decide how to use it.</p>
+              
+              <div className="bg-indigo-600 p-12 rounded-[3.5rem] text-center shadow-2xl border-4 border-indigo-400 mt-20">
+                <p className="text-5xl font-black text-white leading-tight uppercase tracking-tighter">
+                  The handle of the cup is in your hand.<br />How will you use it?
+                </p>
+              </div>
             </section>
-        </div>
+
+          </div>
+        ) : (
+          /* OUTLINE VIEW - SUMMARIZED FOR QUICK REFERENCE */
+          <div className="space-y-16 animate-in fade-in zoom-in-95 duration-300">
+             
+             <div className="border-l-8 border-indigo-600 pl-10 space-y-6">
+               <h2 className="text-indigo-400 font-black text-4xl uppercase tracking-tighter">I. FREE WILL: SURVIVE VS. THRIVE (4 MIN)</h2>
+               <ul className="text-2xl space-y-4 text-slate-300 font-bold list-disc ml-6">
+                 <li>Water Analogy: Surving (Poor water) vs. Thriving (Pure water).</li>
+                 <li><span className="text-white underline decoration-indigo-500 italic">Key Text:</span> Deut 30:19 (Life or Death).</li>
+                 <li>Context: Israel taught clearly; choice remained with them.</li>
+                 <li>Illustration: Hiking with the "Experienced Guide".</li>
+               </ul>
+             </div>
+
+             <div className="border-l-8 border-slate-800 pl-10 space-y-6">
+               <h2 className="text-indigo-400 font-black text-4xl uppercase tracking-tighter">II. THE EQUIPMENT (6 MIN)</h2>
+               <ul className="text-2xl space-y-4 text-slate-300 font-bold list-disc ml-6">
+                 <li>The Tools: Manual (Bible), Thinking Ability, Conscience.</li>
+                 <li><span className="text-white underline decoration-indigo-500 italic">Key Text:</span> Isa 48:17 (Teaching for benefit).</li>
+                 <li>Concept: <strong className="text-white italic">Reverse Engineering</strong> God's Law (Ps 119:97, 100).</li>
+                 <li>Application: Murder vs. Hatred (The root malfunction).</li>
+                 <li>Sensors: Training perceptive powers through use (Heb 5:14).</li>
+               </ul>
+             </div>
+
+             <div className="border-l-8 border-indigo-600 pl-10 space-y-6">
+               <h2 className="text-indigo-400 font-black text-4xl uppercase tracking-tighter">III. THE 4-STEP FILTER (10 MIN)</h2>
+               <ol className="text-3xl space-y-8 text-slate-300 font-black list-decimal ml-8">
+                 <li><span className="text-white">Patience (Sediment Trap):</span> Deut 32:29. Muddy emotions settle.</li>
+                 <li><span className="text-white">Prayer (UV Light):</span> James 1:5. Sanitizing worldly philosophies.</li>
+                 <li><span className="text-white">Research (Membrane):</span> Prov 2:3-5. Microscopic logic membrane.</li>
+                 <li><span className="text-white">Motives (Taste Test):</span> Pr 16:2. Is the "flavor" of the motive sincere?</li>
+               </ol>
+             </div>
+
+             <div className="border-l-8 border-slate-800 pl-10 space-y-6">
+               <h2 className="text-indigo-400 font-black text-4xl uppercase tracking-tighter">IV. IMPLEMENTATION (4 MIN)</h2>
+               <ul className="text-2xl space-y-4 text-slate-300 font-bold list-disc ml-6">
+                 <li>3-Day Rule: Don't die of thirst holding a filter.</li>
+                 <li><span className="text-white underline decoration-indigo-500 italic">Power:</span> Phil 2:13 (Energy to lift the glass).</li>
+                 <li>Reality check: Hardships (Ps 34:19) vs. Dead Ends (Eccl 3:6).</li>
+               </ul>
+             </div>
+
+             <div className="border-l-8 border-indigo-600 pl-10 space-y-6">
+               <h2 className="text-indigo-400 font-black text-4xl uppercase tracking-tighter">V. THE FINAL CHOICE (6 MIN)</h2>
+               <ul className="text-2xl space-y-4 text-slate-300 font-bold list-disc ml-6">
+                 <li>Dedication: Calculating the cost of the tower (Luke 14:28).</li>
+                 <li>Warning: Knowing but not doing is a sin (James 4:17).</li>
+                 <li>Loyalty: Not violating your vow (Num 30:2).</li>
+                 <li>Gift: Making Jehovah's heart rejoice (Prov 27:11).</li>
+                 <li>Final Visual: <strong className="text-white uppercase tracking-widest">The Handle of the Cup.</strong></li>
+               </ul>
+             </div>
+          </div>
+        )}
+      </main>
+
     </div>
+  );
+};
 
-    <script>
-        // TIMER LOGIC
-        let timeLeft = 1800;
-        let timerId = null;
-        const display = document.getElementById('display');
-        const startBtn = document.getElementById('startPauseBtn');
-
-        function updateDisplay() {
-            const mins = Math.floor(timeLeft / 60);
-            const secs = timeLeft % 60;
-            display.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-            if (timeLeft < 300) {
-                display.classList.add('text-red-500');
-                display.classList.remove('text-white');
-            } else {
-                display.classList.remove('text-red-500');
-                display.classList.add('text-white');
-            }
-        }
-
-        function toggleTimer() {
-            if (timerId) {
-                clearInterval(timerId);
-                timerId = null;
-                startBtn.textContent = 'RESUME';
-                startBtn.classList.replace('bg-amber-600', 'bg-indigo-600');
-            } else {
-                timerId = setInterval(() => {
-                    if (timeLeft > 0) {
-                        timeLeft--;
-                        updateDisplay();
-                    } else {
-                        clearInterval(timerId);
-                        timerId = null;
-                        startBtn.textContent = 'DONE';
-                    }
-                }, 1000);
-                startBtn.textContent = 'PAUSE';
-                startBtn.classList.add('bg-amber-600');
-            }
-        }
-
-        function resetTimer() {
-            clearInterval(timerId);
-            timerId = null;
-            timeLeft = 1800;
-            updateDisplay();
-            startBtn.textContent = 'START';
-            startBtn.classList.remove('bg-amber-600');
-            startBtn.classList.add('bg-indigo-600');
-        }
-
-        // TAB LOGIC
-        function switchTab(tab) {
-            const outlineView = document.getElementById('outline-view');
-            const scriptView = document.getElementById('script-view');
-            const outlineTab = document.getElementById('outlineTab');
-            const scriptTab = document.getElementById('scriptTab');
-
-            if (tab === 'outline') {
-                outlineView.classList.add('active');
-                scriptView.classList.remove('active');
-                outlineTab.classList.add('text-indigo-400', 'border-indigo-400');
-                scriptTab.classList.remove('text-indigo-400', 'border-indigo-400');
-                scriptTab.classList.add('text-slate-400', 'border-transparent');
-            } else {
-                scriptView.classList.add('active');
-                outlineView.classList.remove('active');
-                scriptTab.classList.add('text-indigo-400', 'border-indigo-400');
-                outlineTab.classList.remove('text-indigo-400', 'border-indigo-400');
-                outlineTab.classList.add('text-slate-400', 'border-transparent');
-            }
-        }
-    </script>
-</body>
-</html>
+export default App;
