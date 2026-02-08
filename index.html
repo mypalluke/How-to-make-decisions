@@ -5,13 +5,33 @@ const App = () => {
   const [timeLeft, setTimeLeft] = useState(30 * 60);
   const [isActive, setIsActive] = useState(false);
   const [activeTab, setActiveTab] = useState('script'); 
+  const [isFlashing, setIsFlashing] = useState(false);
+
+  // Time markers for pace-checking (in seconds)
+  const flashMarkers = [
+    26 * 60, // 1560
+    20 * 60, // 1200
+    8 * 60,  // 480
+    4 * 60,  // 240
+    2 * 60   // 120
+  ];
 
   // Timer logic
   useEffect(() => {
     let interval = null;
     if (isActive && timeLeft > 0) {
       interval = setInterval(() => {
-        setTimeLeft((time) => time - 1);
+        setTimeLeft((time) => {
+          const nextTime = time - 1;
+          
+          // Trigger 150ms white flash at markers
+          if (flashMarkers.includes(nextTime)) {
+            setIsFlashing(true);
+            setTimeout(() => setIsFlashing(false), 150);
+          }
+          
+          return nextTime;
+        });
       }, 1000);
     } else if (timeLeft === 0) {
       setIsActive(false);
@@ -30,6 +50,7 @@ const App = () => {
   const resetTimer = () => {
     setIsActive(false);
     setTimeLeft(30 * 60);
+    setIsFlashing(false);
   };
 
   // Convert pause markers to red dots
@@ -66,7 +87,12 @@ const App = () => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/40">
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/40 transition-colors duration-75">
+      
+      {/* PACE FLASH OVERLAY */}
+      {isFlashing && (
+        <div className="fixed inset-0 z-[100] bg-white pointer-events-none opacity-100" />
+      )}
       
       {/* FIXED TOP HEADER */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 shadow-2xl">
@@ -110,6 +136,7 @@ const App = () => {
         </div>
       </header>
 
+      {/* CONTENT AREA */}
       <main className="max-w-4xl mx-auto px-8 pt-48 pb-40">
         
         {activeTab === 'script' ? (
@@ -132,7 +159,7 @@ const App = () => {
               
               <p>It is similar with decisions. Making decisions is essential to life. In fact, that is a scriptural statement.</p>
               
-              <p>{renderPauses("Turn with me to Deuteronomy 30:19. (pause 2 beats) Notice what the creator puts before his servants. As we are reading this, keep this in mind. Jehovah had clearly taught Israel what was right, what was wrong, and the consequences for each. With that loving guidance in place, notice what he says at…")}</p>
+              <p>{renderPauses("Turn with me to Deuteronomy 30:19. (pause 2 beats) Notice that what the creator puts before his servants. As we are reading this, keep this in mind. Jehovah had clearly taught Israel what was right, what was wrong, and the consequences for each. With that loving guidance in place, notice what he says at…")}</p>
               
               <ScriptureBox>
                 {`19 I take the heavens and the earth as witnesses against you today that I have put life and death before you, the blessing and the curse;+ and you must choose life (pause 3 beats) so that you may live,+ you and your descendants`}
@@ -208,11 +235,9 @@ const App = () => {
               
               <p>Jehovah has given us a four-step purification process. This could be our decision filtration system. It’s a powerful metal tool that takes a muddy, high-pressure situation and refines it until what is left is a clear, safe decision.</p>
 
-              <p>So what’s the first step in our filter?</p>
-
               <div className="space-y-6">
                 <h4 className="text-2xl font-black text-indigo-500 uppercase">Step 1: Patience (Sediment Trap)</h4>
-                <p>{renderPauses("Step 1: based on Pr 21:5 “The plans of the diligent surely lead to success, But all who are hasty surely head for poverty.’ Don’t be hasty (stop! think!). When you’re standing in front of a stream and you’re thirsty, the pressure to just 'drink now' is intense. Life is the same. The pressure to make a quick decision can be muddy. In a physical water filter, the first stage is often a sediment trap. It relies on gravity and time. If you try to force muddy water through a fine filter immediately, you’ll clog the whole system. You have to let it sit so the heavy dirt can sink to the bottom. Spiritually, our \"mud\" is often our raw emotions— (pause one beat) panic, pride, or the pressure to act now.")}</p>
+                <p>{renderPauses("Step 1: based on Pr 21:5 “The plans of the diligent surely lead to success...” Don’t be hasty (stop! think!). When you’re standing in front of a stream and you’re thirsty, the pressure to just 'drink now' is intense. Life is the same. The pressure to make a quick decision can be muddy. In a physical water filter, the first stage is often a sediment trap. It relies on gravity and time. If you try to force muddy water through a fine filter immediately, you’ll clog the whole system. You have to let it sit so the heavy dirt can sink to the bottom. Spiritually, our \"mud\" is often our raw emotions— (pause one beat) panic, pride, or the pressure to act now.")}</p>
                 
                 <p>Notice the perspective Jehovah encourages us to have before we take a single step</p>
                 <p className="font-bold uppercase tracking-widest text-slate-500 text-sm">Read Deuteronomy 32:29</p>
@@ -220,15 +245,9 @@ const App = () => {
                   {`29If only they were wise! They would ponder over this. They would think about their outcome. (pause 3 beats)`}
                 </ScriptureBox>
                 
-                <p>As Deuteronomy 32:29 suggests, a wise person "ponders over" the outcome. By being patient, we let the "mud" of our emotions settle so we can actually see the situation for what it is.</p>
-                
-                <p>This is not a wait and see what happens attitude, it is actually diligently pondering the situation and taking further steps to clarify what may be best.</p>
-                
-                <p>If you rush into a decision, you may overlook important information.</p>
+                <p>As Deuteronomy 32:29 suggests, a wise person "ponders over" the outcome. By being patient, we let the "mud" of our emotions settle so we can actually see the situation for what it is. This is not a wait and see what happens attitude, it is actually diligently pondering the situation and taking further steps to clarify what may be best. If you rush into a decision, you may overlook important information.</p>
                 
                 <p>Stopping and thinking about things and not making an impulsive decision helps you to remember you may not have all the answers. So now with clarity you remember then to pray. Youve thought things through. You now have the Clarity of mind to even know what to pray for.</p>
-                
-                <p>And that leads us to the next stage in our decision filter:</p>
               </div>
 
               <div className="space-y-6">
@@ -241,8 +260,6 @@ const App = () => {
                 </ScriptureBox>
                 
                 <p>When we pray as James 1:5 suggests, we are asking Jehovah for His light. We are asking Him to neutralize the invisible "spiritual viruses"—those subtle worldly philosophies—that might look harmless but could make us spiritually ill. Prayer "sanitizes" our thinking at a level we can't see with the naked eye. We are asking Jehovah for his wisdom on the matter. We are showing him we don't want to rely on ourselves but we trust him. He gives generously.</p>
-                
-                <p>Now we have have humbled ourselves we are ready for the next stage</p>
               </div>
 
               <div className="space-y-6">
@@ -254,13 +271,7 @@ const App = () => {
                   3Moreover, if you call out for understanding And raise your voice for discernment; 4If you keep seeking for it as for silver, And you keep searching for it as for hidden treasures; 5Then you will understand the fear of Jehovah, And you will find the knowledge of God.
                 </ScriptureBox>
                 
-                <p>This is where we "dig deep" into the Bible as Proverbs 2:3-5 describes. We are putting our thoughts under the "pressure" of God’s Word. This process separates human thinking from Jehovah’s wisdom. It’s not always the path of least resistance, but it’s the only way to get the salt out.</p>
-                
-                <p>We make good use of tools provided through the christian congregation and mature christians although careful not to pressure them to make a decision for us.</p>
-                
-                <p>We must carry our own load and avoid asking others “what would you do?” the only one we can throw our burdens on is Jehovah.</p>
-                
-                <p>Now finally we are ready for our final stage in our decision filter:</p>
+                <p>This is where we "dig deep" into the Bible as Proverbs 2:3-5 describes. We are putting our thoughts under the "pressure" of God’s Word. This process separates human thinking from Jehovah’s wisdom. It’s not always the path of least resistance, but it’s the only way to get the salt out. We make good use of tools provided through the christian congregation and mature christians although careful not to pressure them to make a decision for us. We must carry our own load and avoid asking others “what would you do?” the only one we can throw our burdens on is Jehovah.</p>
               </div>
 
               <div className="space-y-6">
@@ -294,11 +305,7 @@ const App = () => {
               
               <p className="font-bold text-white text-4xl leading-tight">A purified decision is useless if you never “drink the water”.</p>
               
-              <p>Do you know how long it you'd survive if you don’t take in any water either by food or drink?</p>
-              
-              <p className="text-red-400 font-black">You could perish in as little as three days!</p>
-              
-              <p>We can get stuck in a "Feedback Loop" of second-guessing. Paul encouraged the Corinthians to "complete what you started" (2 Cor 8:10, 11).</p>
+              <p>Do you know how long it you'd survive if you don’t take in any water either by food or drink? You could perish in as little as three days! We can get stuck in a "Feedback Loop" of second-guessing. Paul encouraged the Corinthians to "complete what you started" (2 Cor 8:10, 11).</p>
               
               <p>We are not without help, Jehovah gives us the "energy to lift the glass." (Phil 2:13) says ‘13For God is the one who for the sake of his good pleasure energizes you, giving you both the desire and the power to act.’</p>
               
@@ -361,9 +368,9 @@ const App = () => {
           <div className="space-y-16 animate-in fade-in zoom-in-95 duration-300">
              
              <div className="border-l-8 border-indigo-600 pl-10 space-y-6">
-               <h2 className="text-indigo-400 font-black text-4xl uppercase tracking-tighter">I. FREE WILL: SURVIVE VS. THRIVE (4 MIN)</h2>
+               <h2 className="text-indigo-400 font-black text-4xl uppercase tracking-tighter">I. CHOICE: SURVIVE VS. THRIVE (4 MIN)</h2>
                <ul className="text-2xl space-y-4 text-slate-300 font-bold list-disc ml-6">
-                 <li>Water Analogy: Surving (Poor water) vs. Thriving (Pure water).</li>
+                 <li>Analogy: Surving (Poor water) vs. Thriving (Pure water).</li>
                  <li><span className="text-white underline decoration-indigo-500 italic">Key Text:</span> Deut 30:19 (Life or Death).</li>
                  <li>Context: Israel taught clearly; choice remained with them.</li>
                  <li>Illustration: Hiking with the "Experienced Guide".</li>
@@ -375,7 +382,7 @@ const App = () => {
                <ul className="text-2xl space-y-4 text-slate-300 font-bold list-disc ml-6">
                  <li>The Tools: Manual (Bible), Thinking Ability, Conscience.</li>
                  <li><span className="text-white underline decoration-indigo-500 italic">Key Text:</span> Isa 48:17 (Teaching for benefit).</li>
-                 <li>Concept: <strong className="text-white italic">Reverse Engineering</strong> God's Law (Ps 119:97, 100).</li>
+                 <li>Logic: <b>Reverse Engineering</b> the Law (Ps 119:97, 100).</li>
                  <li>Application: Murder vs. Hatred (The root malfunction).</li>
                  <li>Sensors: Training perceptive powers through use (Heb 5:14).</li>
                </ul>
